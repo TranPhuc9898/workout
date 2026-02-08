@@ -1,26 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, FlatList, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomIndicatorBar from '../components/BottomIndicatorBar';
 import theme from '../theme';
+import {
+  CATEGORY_FILTERS,
+  getFilteredExercises,
+  getWorkoutGroups,
+} from '../data/exercise-data-provider';
 
-// Hardcoded data (MVP - no backend)
+// Progress cards still hardcoded (no workout tracking backend yet)
 const progressCards = [
   { id: '1', completed: 5, total: 12, name: 'Chest Workout', timeRemaining: '15 min remaining' },
   { id: '2', completed: 3, total: 20, name: 'Legs Workout', timeRemaining: '23 min remaining' },
   { id: '3', completed: 7, total: 15, name: 'Arms Workout', timeRemaining: '10 min remaining' },
 ];
 
-const categories = ['All', 'Warm Up', 'Yoga', 'Biceps', 'Chest'];
+const categoryLabels = CATEGORY_FILTERS.map((f) => f.label);
 
-const exercises = [
-  { id: '1', name: 'Abs Workout', exercises: 16, duration: '18 Min' },
-  { id: '2', name: 'Torso and Trap Workout', exercises: 8, duration: '10 Min' },
-  { id: '3', name: 'Lower Back Exercise', exercises: 14, duration: '18 Min' },
-];
+const PAGE_SIZE = 20;
 
 const ProgressScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [page, setPage] = useState(1);
+
+  // Filter exercises then group by primaryMuscles
+  const workoutGroups = useMemo(() => {
+    const filtered = getFilteredExercises(selectedCategory);
+    return getWorkoutGroups(filtered);
+  }, [selectedCategory]);
+
+  // Reset page when category changes
+  const handleCategoryChange = (category) => {
+    setSelectedCategory(category);
+    setPage(1);
+  };
+
+  // Paginated workout groups
+  const paginatedGroups = workoutGroups.slice(0, page * PAGE_SIZE);
+  const hasMore = paginatedGroups.length < workoutGroups.length;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -56,7 +74,7 @@ const ProgressScreen = ({ navigation }) => {
         <Text style={styles.sectionTitle}>Categories</Text>
         <FlatList
           horizontal
-          data={categories}
+          data={categoryLabels}
           keyExtractor={(item) => item}
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -64,7 +82,7 @@ const ProgressScreen = ({ navigation }) => {
                 styles.categoryChip,
                 selectedCategory === item && styles.categoryChipSelected
               ]}
-              onPress={() => setSelectedCategory(item)}
+              onPress={() => handleCategoryChange(item)}
             >
               <Text style={[
                 styles.categoryText,
@@ -78,27 +96,43 @@ const ProgressScreen = ({ navigation }) => {
           contentContainerStyle={styles.categoriesContainer}
         />
 
-        {/* Abs Workout Section */}
+        {/* Workout Groups Section */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Abs Workout</Text>
+          <Text style={styles.sectionTitle}>
+            {selectedCategory === 'All' ? 'Workouts' : `${selectedCategory} Workouts`}
+          </Text>
           <TouchableOpacity>
             <Text style={styles.seeAllLink}>See All</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Exercise List */}
-        {exercises.map((item) => (
-          <TouchableOpacity key={item.id} style={styles.exerciseCard}>
-            <Image source={require('../../assets/logo.png')} style={styles.exerciseThumbnail} />
+        {/* Workout Group Cards - grouped by primaryMuscles from exercises.json */}
+        {paginatedGroups.map((item) => (
+          <TouchableOpacity
+            key={item.id}
+            style={styles.exerciseCard}
+            onPress={() => navigation.navigate('WorkoutDetail', { muscle: item.id })}
+          >
+            <Image
+              source={item.gifUrl ? { uri: item.gifUrl } : require('../../assets/logo.png')}
+              style={styles.exerciseThumbnail}
+            />
             <View style={styles.exerciseInfo}>
               <Text style={styles.exerciseName}>{item.name}</Text>
               <Text style={styles.exerciseMeta}>
-                {item.exercises} Exercises • {item.duration}
+                {item.exerciseCount} Exercises  •  {item.duration}
               </Text>
             </View>
             <Text style={styles.chevron}>›</Text>
           </TouchableOpacity>
         ))}
+
+        {/* Load more button */}
+        {hasMore && (
+          <TouchableOpacity style={styles.loadMoreBtn} onPress={() => setPage((p) => p + 1)}>
+            <Text style={styles.loadMoreText}>Load More</Text>
+          </TouchableOpacity>
+        )}
 
         <BottomIndicatorBar />
       </ScrollView>
@@ -238,6 +272,20 @@ const styles = StyleSheet.create({
   },
   chevron: {
     fontSize: 28,
+    color: theme.colors.primary,
+  },
+  loadMoreBtn: {
+    alignItems: 'center',
+    paddingVertical: 14,
+    marginHorizontal: 20,
+    marginBottom: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+  },
+  loadMoreText: {
+    fontSize: 14,
+    fontFamily: theme.fonts.bold,
     color: theme.colors.primary,
   },
 });

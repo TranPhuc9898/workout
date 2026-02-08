@@ -5,8 +5,22 @@ import theme from '../theme';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
-// Driven by progress prop, with smooth animation between ticks
-const CircularProgressBar = ({ progress, completedRepsInSet, totalReps, isInBreak, timer, showTrainerImage = false, trainerId = "1" }) => {
+/**
+ * Circular progress ring with 2 modes:
+ * - Rep phase (purple): ring fills per rep, center = "05/13"
+ * - Break phase (mint): ring fills over break time, center = "12s"
+ */
+const CircularProgressBar = ({
+    ringProgress,       // 0-1 phase-specific progress (rep or break)
+    completedRepsInSet,
+    totalReps,
+    isInBreak,
+    breakTimeRemaining, // seconds left in break
+    currentSet,
+    totalSets,
+    showTrainerImage = false,
+    trainerId = "1",
+}) => {
     const radius = 42;
     const circumference = radius * Math.PI * 2;
     const strokeWidth = 15;
@@ -15,15 +29,18 @@ const CircularProgressBar = ({ progress, completedRepsInSet, totalReps, isInBrea
     const animProgress = useRef(new Animated.Value(0)).current;
     const circleRef = useRef();
 
-    // Smoothly animate to new progress value over ~1 second
+    // Ring color based on phase
+    const ringColor = isInBreak ? theme.colors.breakAccent : theme.colors.primary;
+
+    // Smoothly animate to new progress value
     useEffect(() => {
         Animated.timing(animProgress, {
-            toValue: progress,
-            duration: 1000,
+            toValue: ringProgress,
+            duration: 800,
             easing: Easing.linear,
             useNativeDriver: true,
         }).start();
-    }, [progress]);
+    }, [ringProgress]);
 
     // Update circle strokeDashoffset via native props for performance
     useEffect(() => {
@@ -51,15 +68,30 @@ const CircularProgressBar = ({ progress, completedRepsInSet, totalReps, isInBrea
         };
     });
 
+    // Center text: rep mode = "05/13", break mode = "12s"
+    const centerText = isInBreak
+        ? `${breakTimeRemaining}s`
+        : `${String(completedRepsInSet).padStart(2, '0')}/${totalReps}`;
+
+    // Sub label: set info or break indicator
+    const subLabel = isInBreak
+        ? `Break`
+        : `Set ${currentSet}/${totalSets}`;
+
+    // Text color matches ring color
+    const textColor = isInBreak ? theme.colors.breakAccent : theme.colors.primary;
+
     return (
-        <View style={styles.trainerImage}>
+        <View style={styles.container}>
             {showTrainerImage && (
                 <Image
                     source={trainerId === "1"
                         ? require('../../assets/trainer-alan.png')
                         : require('../../assets/trainer-lina.png')
                     }
-                    style={[StyleSheet.absoluteFill, { width: 230, height: 230, borderRadius: 120, zIndex: 0 }]}
+                    style={[StyleSheet.absoluteFill, {
+                        width: 230, height: 230, borderRadius: 120, zIndex: 0
+                    }]}
                     resizeMode="cover"
                 />
             )}
@@ -72,11 +104,11 @@ const CircularProgressBar = ({ progress, completedRepsInSet, totalReps, isInBrea
                     strokeWidth={strokeWidth}
                     fill="transparent"
                 />
-                {/* Progress ring - animated smoothly */}
+                {/* Progress ring - color changes per phase */}
                 <AnimatedCircle
                     ref={circleRef}
                     cx="50" cy="50" r={radius}
-                    stroke={theme.colors.primary}
+                    stroke={ringColor}
                     strokeWidth={strokeWidth}
                     fill="transparent"
                     strokeDasharray={circumference}
@@ -94,11 +126,14 @@ const CircularProgressBar = ({ progress, completedRepsInSet, totalReps, isInBrea
                 ))}
             </Svg>
 
-            {/* Rep counter text */}
-            {!showTrainerImage && timer > 0 && (
-                <View style={[StyleSheet.absoluteFill, styles.repCountsContainer]}>
-                    <Text style={styles.repCounts}>
-                        {completedRepsInSet}/{totalReps}
+            {/* Center text - rep count or break countdown */}
+            {!showTrainerImage && (
+                <View style={[StyleSheet.absoluteFill, styles.centerContainer]}>
+                    <Text style={[styles.centerText, { color: textColor }]}>
+                        {centerText}
+                    </Text>
+                    <Text style={[styles.subLabel, { color: textColor }]}>
+                        {subLabel}
                     </Text>
                 </View>
             )}
@@ -107,19 +142,25 @@ const CircularProgressBar = ({ progress, completedRepsInSet, totalReps, isInBrea
 };
 
 const styles = StyleSheet.create({
-    trainerImage: {
+    container: {
         justifyContent: 'center',
         alignItems: 'center',
     },
-    repCountsContainer: {
+    centerContainer: {
         justifyContent: 'center',
         alignItems: 'center',
     },
-    repCounts: {
+    centerText: {
         fontSize: 34,
         fontFamily: theme.fonts.bold,
         textAlign: 'center',
-        color: theme.colors.primary,
+    },
+    subLabel: {
+        fontSize: 14,
+        fontFamily: theme.fonts.regular,
+        textAlign: 'center',
+        marginTop: 2,
+        opacity: 0.7,
     },
 });
 

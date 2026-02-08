@@ -55,20 +55,33 @@ const WorkoutScreen = ({ route }) => {
     const timeRemaining = totalWorkoutTimeInSec - elapsed;
     const progress = totalWorkoutTimeInSec > 0 ? elapsed / totalWorkoutTimeInSec : 0;
 
+    // Derive phase state from elapsed time
     let completedRepsInSet = 0;
     let isInBreak = false;
+    let currentSet = 1;
+    let breakTimeRemaining = 0;
+    let ringProgress = 0; // 0-1 phase-specific (rep or break)
 
     if (isComplete) {
         completedRepsInSet = reps;
+        currentSet = sets;
+        ringProgress = 1;
     } else {
         const cycleIndex = Math.min(Math.floor(elapsed / cycleDuration), sets - 1);
         const timeInCycle = elapsed - cycleIndex * cycleDuration;
+        currentSet = cycleIndex + 1;
 
         if (timeInCycle < setDuration) {
+            // REP PHASE - ring fills smoothly based on time (not discrete rep steps)
             completedRepsInSet = Math.floor(timeInCycle / timeBetweenRepsInSec);
+            ringProgress = timeInCycle / setDuration;
         } else {
+            // BREAK PHASE - ring fills over break duration
             completedRepsInSet = reps;
             isInBreak = true;
+            const breakElapsed = timeInCycle - setDuration;
+            breakTimeRemaining = Math.max(breakTime - breakElapsed, 0);
+            ringProgress = breakElapsed / breakTime;
         }
     }
 
@@ -127,7 +140,7 @@ const WorkoutScreen = ({ route }) => {
     const handleNextExercise = () => {
         setShowBottomSheet(false);
         setTimeout(() => {
-            navigation.replace('Workout', { workoutName, sets, reps, breakTime });
+            navigation.navigate('Main');
         }, 300);
     };
 
@@ -169,11 +182,13 @@ const WorkoutScreen = ({ route }) => {
 
             <View style={styles.progressBarContainer}>
                 <CircularProgressBar
-                    progress={progress}
+                    ringProgress={ringProgress}
                     completedRepsInSet={completedRepsInSet}
                     totalReps={reps}
                     isInBreak={isInBreak}
-                    timer={timeRemaining}
+                    breakTimeRemaining={breakTimeRemaining}
+                    currentSet={currentSet}
+                    totalSets={sets}
                     showTrainerImage={showTrainerAtMilestone}
                     trainerId={trainerId}
                 />

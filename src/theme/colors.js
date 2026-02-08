@@ -23,6 +23,9 @@ export const colors = {
 
   // Progress
   progressGray: '#8A9A9D',
+
+  // Break phase color (yellow)
+  breakAccent: '#F4D300',
 };
 
 export default colors;
