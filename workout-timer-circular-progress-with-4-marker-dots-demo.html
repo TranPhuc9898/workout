@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circular Progress Demo - Workout Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .motivation-message {
+            text-align: center;
+            background: rgba(107, 78, 255, 0.1);
+            color: #6B4EFF;
+            padding: 12px 24px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            display: inline-block;
+            margin-left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .progress-container {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            margin: 0 auto 40px;
+        }
+
+        .circular-progress {
+            transform: rotate(-90deg);
+        }
+
+        .progress-bg {
+            fill: none;
+            stroke: #E8E8F0;
+            stroke-width: 15;
+        }
+
+        .progress-bar {
+            fill: none;
+            stroke: #6B4EFF;
+            stroke-width: 15;
+            stroke-linecap: round;
+            stroke-dasharray: 264;
+            stroke-dashoffset: 264;
+            transition: stroke-dashoffset 0.5s linear;
+        }
+
+        /* 4 static marker dots at 12h, 3h, 6h, 9h positions */
+        .marker-dot {
+            fill: white;
+        }
+
+        /* Moving progress dot */
+        .progress-dot {
+            fill: white;
+            transition: all 0.5s linear;
+        }
+
+        .center-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .rep-count {
+            font-size: 48px;
+            font-weight: 700;
+            color: #6B4EFF;
+            line-height: 1;
+        }
+
+        .exercise-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .exercise-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+        }
+
+        .timer {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .horizontal-progress-container {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .time-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .horizontal-progress {
+            width: 100%;
+            height: 4px;
+            background: #E8E8F0;
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .horizontal-progress-fill {
+            height: 100%;
+            background: #6B4EFF;
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.5s linear;
+        }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            padding: 0 20px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #6B4EFF;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5940d9;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #6B4EFF;
+            border: 2px solid #6B4EFF;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f7ff;
+        }
+
+        .explanation {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f7ff;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .explanation h3 {
+            color: #6B4EFF;
+            margin-bottom: 12px;
+        }
+
+        .explanation ul {
+            margin-left: 20px;
+            color: #666;
+        }
+
+        .explanation li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="motivation-message">
+            skibidi 5 more!
+        </div>
+
+        <div class="progress-container">
+            <svg class="circular-progress" width="240" height="240" viewBox="0 0 100 100">
+                <!-- Background circle -->
+                <circle
+                    class="progress-bg"
+                    cx="50"
+                    cy="50"
+                    r="42"
+                />
+
+                <!-- Progress circle -->
+                <circle
+                    class="progress-bar"
+                    id="progressBar"
+                    cx="50"
+                    cy="50"
+                    r="42"
+                />
+
+                <!-- 4 Static marker dots at 12h, 3h, 6h, 9h (inner edge of ring) -->
+                <!-- 12h position (top) -->
+                <circle class="marker-dot" cx="50" cy="0.5" r="1.2" />
+
+                <!-- 3h position (right) -->
+                <circle class="marker-dot" cx="99.5" cy="50" r="1.2" />
+
+                <!-- 6h position (bottom) -->
+                <circle class="marker-dot" cx="50" cy="99.5" r="1.2" />
+
+                <!-- 9h position (left) -->
+                <circle class="marker-dot" cx="0.5" cy="50" r="1.2" />
+
+                <!-- Moving progress dot (center of stroke) -->
+                <circle
+                    class="progress-dot"
+                    id="progressDot"
+                    cx="50"
+                    cy="0.5"
+                    r="2.5"
+                />
+            </svg>
+
+            <div class="center-text">
+                <div class="rep-count" id="repCount">10/15</div>
+            </div>
+        </div>
+
+        <div class="exercise-info">
+            <div class="exercise-name">Full Body Warm Up</div>
+            <div class="timer" id="timer">02:22</div>
+        </div>
+
+        <div class="horizontal-progress-container">
+            <div class="time-labels">
+                <span>0:00</span>
+                <span id="totalTime">2:53</span>
+            </div>
+            <div class="horizontal-progress">
+                <div class="horizontal-progress-fill" id="horizontalProgress"></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-secondary" onclick="resetDemo()">Reset</button>
+            <button class="btn btn-primary" onclick="toggleProgress()" id="toggleBtn">Start</button>
+        </div>
+
+        <div class="explanation">
+            <h3>🎯 Phân Tích UI Components</h3>
+            <ul>
+                <li><strong>4 Chấm Trắng Tĩnh:</strong> Vị trí 12h, 3h, 6h, 9h (inner edge) - Size 1.2px</li>
+                <li><strong>1 Chấm Trắng Di Động:</strong> Chạy theo tiến độ (center of stroke) - Size 2.5px</li>
+                <li><strong>Circular Ring:</strong> Stroke width 15px, màu purple #6B4EFF</li>
+                <li><strong>Progress Dual System:</strong> Vòng tròn + thanh ngang phía dưới</li>
+                <li><strong>Motivation Message:</strong> Background purple nhạt, bo tròn</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false;
+        let currentProgress = 0;
+        let animationFrame;
+        let startTime;
+        const totalDuration = 173; // 2:53 in seconds
+        const totalReps = 15;
+        const circumference = 42 * Math.PI * 2; // 264
+
+        function updateProgress(progress) {
+            // Update circular progress bar
+            const progressBar = document.getElementById('progressBar');
+            const offset = circumference - (circumference * progress / 100);
+            progressBar.style.strokeDashoffset = offset;
+
+            // Update moving dot position
+            const progressDot = document.getElementById('progressDot');
+            const angle = -90 + (progress * 360 / 100); // Start from top (-90deg)
+            const radians = (angle * Math.PI) / 180;
+            const radius = 42 + 15 / 2; // Center of stroke (radius + strokeWidth/2)
+            const x = 50 + radius * Math.cos(radians);
+            const y = 50 + radius * Math.sin(radians);
+            progressDot.setAttribute('cx', x);
+            progressDot.setAttribute('cy', y);
+
+            // Update rep count
+            const currentRep = Math.floor((progress / 100) * totalReps);
+            document.getElementById('repCount').textContent = `${currentRep}/${totalReps}`;
+
+            // Update horizontal progress
+            document.getElementById('horizontalProgress').style.width = progress + '%';
+
+            // Update timer
+            const remainingTime = Math.ceil(totalDuration * (1 - progress / 100));
+            const minutes = Math.floor(remainingTime / 60);
+            const seconds = remainingTime % 60;
+            document.getElementById('timer').textContent =
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            currentProgress = progress;
+        }
+
+        function animate() {
+            if (!isRunning) return;
+
+            const elapsed = (Date.now() - startTime) / 1000;
+            const progress = Math.min((elapsed / totalDuration) * 100, 100);
+
+            updateProgress(progress);
+
+            if (progress < 100) {
+                animationFrame = requestAnimationFrame(animate);
+            } else {
+                isRunning = false;
+                document.getElementById('toggleBtn').textContent = 'Done ✓';
+                setTimeout(() => {
+                    document.getElementById('toggleBtn').textContent = 'Start';
+                }, 2000);
+            }
+        }
+
+        function toggleProgress() {
+            const btn = document.getElementById('toggleBtn');
+
+            if (!isRunning) {
+                isRunning = true;
+                startTime = Date.now() - (currentProgress / 100 * totalDuration * 1000);
+                btn.textContent = 'Pause';
+                animate();
+            } else {
+                isRunning = false;
+                btn.textContent = 'Resume';
+                cancelAnimationFrame(animationFrame);
+            }
+        }
+
+        function resetDemo() {
+            isRunning = false;
+            cancelAnimationFrame(animationFrame);
+            currentProgress = 0;
+            updateProgress(0);
+            document.getElementById('toggleBtn').textContent = 'Start';
+        }
+
+        // Initialize
+        updateProgress(0);
+    </script>
+</body>
+</html>
