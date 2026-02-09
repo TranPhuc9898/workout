@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Modal } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
@@ -203,7 +203,17 @@ const WorkoutScreen = ({ route }) => {
                 <HorizontalProgressBar progress={progress} durationInSec={totalWorkoutTimeInSec} showTimeLabels={true}/>
             </View>
 
-            <BottomIndicatorBar />
+            {/* Cancel & Pause/Resume buttons */}
+            {!isComplete && (
+                <View style={styles.buttonRow}>
+                    <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
+                        <Text style={styles.cancelBtnTxt}>Cancel</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.pauseBtn} onPress={handlePauseResume}>
+                        <Text style={styles.pauseBtnTxt}>{isPaused ? 'Resume' : 'Pause'}</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
                 <Modal transparent visible={showBottomSheet}>
                     <View style={styles.overlay}>
                         <BottomSheet
@@ -299,50 +309,42 @@ const styles = StyleSheet.create({
         margin: 10,
     },
     horizontalProgressBarContainer: {
-        top: 20,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 140
+        marginBottom: 20,
     },
     buttonRow: {
-        position: 'absolute',
-        bottom: 60,
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '80%',
-        marginTop: 20,
+        gap: 12,
+        marginBottom: 30,
     },
     cancelBtn: {
-        marginTop: 20,
-        backgroundColor: theme.colors.white,
-        padding: 16,
-        borderRadius: 16,
-        width: "47%",
+        backgroundColor: '#272641',
+        paddingVertical: 16,
+        borderRadius: 30,
+        flex: 1,
         alignItems: "center",
-        borderWidth: 1,
-        borderColor: theme.colors.primary,
+        justifyContent: "center",
     },
     cancelBtnTxt: {
-        color: theme.colors.primary,
-        textTransform: 'none',
+        color: theme.colors.white,
         fontFamily: theme.fonts.bold,
-        fontSize: 20,
+        fontSize: 16,
     },
     pauseBtn: {
-        marginTop: 20,
         backgroundColor: theme.colors.primary,
-        padding: 16,
-        borderRadius: 16,
-        width: "47%",
+        paddingVertical: 16,
+        borderRadius: 30,
+        flex: 1,
         alignItems: "center",
-        borderWidth: 1,
-        borderColor: theme.colors.primary,
+        justifyContent: "center",
     },
     pauseBtnTxt: {
         color: theme.colors.white,
-        textTransform: 'none',
         fontFamily: theme.fonts.bold,
-        fontSize: 20,
+        fontSize: 16,
     },
     overlay: {
         flex: 1,

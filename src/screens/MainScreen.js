@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import WheelPicker from 'react-native-wheely';
 import AnimatedBubble from '../components/AnimatedBubble';
+import ScreenHeader from '../components/screen-header';
 import BottomIndicatorBar from '../components/BottomIndicatorBar';
 import theme from '../theme';
 
@@ -93,13 +94,8 @@ const MainScreen = () => {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
             >
+                <ScreenHeader />
                 <View style={styles.container}>
-                    <View style={styles.menuContainer}>
-                        <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.menuIconButton}>
-                            <Image source={require('../../assets/icon/More.png')} style={styles.menuIconImage} />
-                        </TouchableOpacity>
-                    </View>
-
                     <View style={styles.bubbleContainer}>
                         <AnimatedBubble quote={startQuote} delay={600}/>
                     </View>
@@ -176,23 +172,6 @@ const styles = StyleSheet.create({
         backgroundColor: theme.colors.background,
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    menuContainer: {
-        position: 'absolute',
-        top: 10,
-        right: 20,
-        zIndex: 1,
-    },
-    menuIconButton: {
-        width: 33,
-        height: 33,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    menuIconImage: {
-        width: 33,
-        height: 33,
-        tintColor: theme.colors.primary,
     },
     bubbleContainer: {
         position: 'relative',

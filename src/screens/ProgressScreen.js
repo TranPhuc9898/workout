@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, FlatList, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import BottomIndicatorBar from '../components/BottomIndicatorBar';
+import ScreenHeader from '../components/screen-header';
 import theme from '../theme';
 import {
   CATEGORY_FILTERS,
@@ -41,18 +41,9 @@ const ProgressScreen = ({ navigation }) => {
   const hasMore = paginatedGroups.length < workoutGroups.length;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Progress</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAllLink}>See All</Text>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <Text style={styles.notificationIcon}>🔔</Text>
-          </TouchableOpacity>
-        </View>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <ScreenHeader showBack title="Progress" onBack={() => navigation.navigate('Main')} />
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
 
         {/* Progress Cards (Horizontal Scroll) */}
         <FlatList
@@ -134,7 +125,6 @@ const ProgressScreen = ({ navigation }) => {
           </TouchableOpacity>
         )}
 
-        <BottomIndicatorBar />
       </ScrollView>
     </SafeAreaView>
   );
@@ -149,26 +139,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontFamily: theme.fonts.bold,
-    color: theme.colors.textPrimary,
+  scrollContent: {
+    paddingBottom: 40,
   },
   seeAllLink: {
     fontSize: 14,
     fontFamily: theme.fonts.regular,
     color: theme.colors.primary,
-  },
-  notificationIcon: {
-    fontSize: 20,
   },
   progressCardsContainer: {
     paddingHorizontal: 20,

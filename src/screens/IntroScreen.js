@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { View, Image, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AnimatedBubble from '../components/AnimatedBubble';
+import ScreenHeader from '../components/screen-header';
 import { SettingsContext } from '../SettingsContext';
 import theme from '../theme';
 
@@ -21,12 +22,8 @@ const IntroScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <ScreenHeader />
       <View style={styles.container}>
-        {/* Menu icon - top right */}
-        <TouchableOpacity style={styles.menuIcon}>
-          <Image source={require('../../assets/icon/More.png')} style={styles.menuIconImage} />
-        </TouchableOpacity>
-
         {/* Speech bubble above avatar */}
         <View style={styles.bubbleContainer}>
           <AnimatedBubble quote={quote} delay={300} />
@@ -62,22 +59,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-    position: 'relative',
-  },
-  menuIcon: {
-    position: 'absolute',
-    top: 60,
-    right: 20,
-    zIndex: 10,
-    width: 33,
-    height: 33,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  menuIconImage: {
-    width: 33,
-    height: 33,
-    tintColor: theme.colors.primary,
   },
   bubbleContainer: {
     width: '80%',

@@ -74,7 +74,14 @@ const AnimatedBubble = ({ quote, duration = 0, delay = 100, playSound = false })
 
     return (
         <Animated.View style={[styles.bubble, { transform: [{ scale: bubbleScale }] }]}>
-            <Animated.Text style={[styles.bubbleText, { opacity: textOpacity }]}>{quote.text}</Animated.Text>
+            <Animated.Text
+                style={[styles.bubbleText, { opacity: textOpacity }]}
+                numberOfLines={2}
+                adjustsFontSizeToFit
+                minimumFontScale={0.7}
+            >
+                {quote.text}
+            </Animated.Text>
             <View style={styles.bubbleTriangle}></View>
         </Animated.View>
     );
@@ -84,7 +91,8 @@ const styles = StyleSheet.create({
     bubble: {
         backgroundColor: theme.colors.backgroundTertiary, // #EEEEEE gray background
         paddingVertical: 20,
-        paddingHorizontal: 48,
+        paddingHorizontal: 24,
+        maxWidth: '85%',
         borderRadius: 20,
         alignSelf: 'center',
         justifyContent: 'center',
