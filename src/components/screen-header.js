@@ -1,46 +1,78 @@
 import React from 'react';
-import { View, TouchableOpacity, Image, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import theme from '../theme';
 
 /**
  * Shared header component for consistent top bar across all screens.
- * - showBack: show chevron-back button (default false)
- * - title: optional title text
- * - showMenu: show 3-dot menu icon (default true), navigates to Settings
+ * - layout="progress": Left=Back, Right=Notification (Progress screen).
+ * - layout="default": Left=Noti(+3-dot when showBack), Right=Back or Settings.
+ * - showNotification=false: hide notification (e.g. Settings).
  */
-const ScreenHeader = ({ showBack = false, title = '', showMenu = true, onBack }) => {
+const ScreenHeader = ({
+  showBack = false,
+  title = '',
+  showSettings = true,
+  showNotification = true,
+  onBack,
+  layout = 'default',
+}) => {
   const navigation = useNavigation();
-
   const handleBack = onBack || (() => navigation.goBack());
+  const isProgressLayout = layout === 'progress';
+
+  const renderBack = () => (
+    <TouchableOpacity onPress={handleBack} style={styles.iconButton} activeOpacity={0.7}>
+      <Ionicons name="chevron-back" size={26} color={theme.colors.textPrimary} />
+    </TouchableOpacity>
+  );
+
+  const renderNoti = () => (
+    <TouchableOpacity onPress={() => {}} style={styles.iconButton} activeOpacity={0.7}>
+      <View style={styles.notiWrapper}>
+        <Ionicons name="notifications-outline" size={24} color={theme.colors.textPrimary} />
+        <View style={styles.badge} />
+      </View>
+    </TouchableOpacity>
+  );
+
+  const render3dot = () => (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('Settings')}
+      style={styles.iconButton}
+      activeOpacity={0.7}
+    >
+      <Ionicons name="ellipsis-vertical" size={24} color={theme.colors.textPrimary} />
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.header}>
-      {/* Left: back button or spacer */}
-      {showBack ? (
-        <TouchableOpacity onPress={handleBack} style={styles.iconButton}>
-          <Ionicons name="chevron-back" size={26} color={theme.colors.textPrimary} />
-        </TouchableOpacity>
-      ) : (
-        <View style={styles.iconSpacer} />
-      )}
+      <View style={styles.leftGroup}>
+        {isProgressLayout ? (
+          showBack && renderBack()
+        ) : (
+          <>
+            {showNotification && renderNoti()}
+            {showBack && showSettings && render3dot()}
+          </>
+        )}
+      </View>
 
-      {/* Center: title */}
       {title ? (
-        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.title} numberOfLines={1}>{title}</Text>
       ) : (
         <View style={styles.titleSpacer} />
       )}
 
-      {/* Right: 3-dot menu or spacer */}
-      {showMenu ? (
-        <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.iconButton}>
-          <Image source={require('../../assets/icon/More.png')} style={styles.menuIcon} />
-        </TouchableOpacity>
-      ) : (
-        <View style={styles.iconSpacer} />
-      )}
+      <View style={styles.rightGroup}>
+        {isProgressLayout ? (
+          showNotification && renderNoti()
+        ) : (
+          showBack ? renderBack() : (showSettings ? render3dot() : <View style={styles.iconSpacer} />)
+        )}
+      </View>
     </View>
   );
 };
@@ -53,6 +85,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
+  leftGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  rightGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   iconButton: {
     width: 36,
     height: 36,
@@ -63,17 +104,26 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
   },
-  menuIcon: {
-    width: 28,
-    height: 28,
-    tintColor: theme.colors.primary,
+  notiWrapper: {
+    position: 'relative',
+    width: 24,
+    height: 24,
+  },
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: theme.colors.primary,
   },
   title: {
     flex: 1,
     fontSize: 24,
     fontFamily: theme.fonts.bold,
     color: theme.colors.textPrimary,
-    marginLeft: 4,
+    marginHorizontal: 8,
   },
   titleSpacer: {
     flex: 1,

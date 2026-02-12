@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, Text, Image, Animated, StyleSheet, Easing } from 'react-native';
 import { Circle, Svg } from "react-native-svg";
 import theme from '../theme';
@@ -9,6 +9,7 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
  * Circular progress ring with 2 modes:
  * - Rep phase (purple): ring fills per rep, center = "05/13"
  * - Break phase (mint): ring fills over break time, center = "12s"
+ * - Trainer image: quick fade out when disappearing
  */
 const CircularProgressBar = ({
     ringProgress,       // 0-1 phase-specific progress (rep or break)
@@ -21,6 +22,10 @@ const CircularProgressBar = ({
     showTrainerImage = false,
     trainerId = "1",
 }) => {
+    const [showFadingImage, setShowFadingImage] = useState(false);
+    const imageOpacity = useRef(new Animated.Value(1)).current;
+    const prevShowTrainerRef = useRef(showTrainerImage);
+
     const radius = 42;
     const circumference = radius * Math.PI * 2;
     const strokeWidth = 15;
@@ -31,6 +36,26 @@ const CircularProgressBar = ({
 
     // Ring color based on phase
     const ringColor = isInBreak ? theme.colors.breakAccent : theme.colors.primary;
+
+    // Trainer image: quick fade out when disappearing
+    useEffect(() => {
+        if (showTrainerImage) {
+            setShowFadingImage(true);
+            imageOpacity.setValue(1);
+        } else if (prevShowTrainerRef.current) {
+            prevShowTrainerRef.current = false;
+            Animated.timing(imageOpacity, {
+                toValue: 0,
+                duration: 150,
+                easing: Easing.out(Easing.ease),
+                useNativeDriver: true,
+            }).start(() => {
+                setShowFadingImage(false);
+                imageOpacity.setValue(1);
+            });
+        }
+        prevShowTrainerRef.current = showTrainerImage;
+    }, [showTrainerImage]);
 
     // Smoothly animate to new progress value
     useEffect(() => {
@@ -81,19 +106,27 @@ const CircularProgressBar = ({
     // Text color matches ring color
     const textColor = isInBreak ? theme.colors.breakAccent : theme.colors.primary;
 
+    const shouldShowTrainer = showTrainerImage || showFadingImage;
+
     return (
         <View style={styles.container}>
-            {showTrainerImage && (
-                <Image
-                    source={trainerId === "1"
-                        ? require('../../assets/trainer-alan.png')
-                        : require('../../assets/trainer-lina.png')
-                    }
-                    style={[StyleSheet.absoluteFill, {
-                        width: 230, height: 230, borderRadius: 120, zIndex: 0
-                    }]}
-                    resizeMode="cover"
-                />
+            {shouldShowTrainer && (
+                <Animated.View
+                    style={[
+                        StyleSheet.absoluteFill,
+                        { width: 230, height: 230, borderRadius: 120, zIndex: 0 },
+                        { opacity: imageOpacity },
+                    ]}
+                >
+                    <Image
+                        source={trainerId === "1"
+                            ? require('../../assets/trainer-alan.png')
+                            : require('../../assets/trainer-lina.png')
+                        }
+                        style={{ width: '100%', height: '100%', borderRadius: 120 }}
+                        resizeMode="cover"
+                    />
+                </Animated.View>
             )}
 
             <Svg height="240" width="240" viewBox="0 0 100 100">

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings Screen - Redesign Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  .phone-frame {
+    width: 375px;
+    height: 812px;
+    background: #FFFFFF;
+    border-radius: 40px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 28px 0;
+    height: 50px;
+  }
+  .status-time { font-size: 15px; font-weight: 600; color: #000; }
+  .status-icons { display: flex; gap: 5px; align-items: center; }
+  .status-icons svg { width: 16px; height: 16px; }
+
+  /* Content */
+  .screen-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: calc(100% - 50px);
+    padding: 0 40px;
+    position: relative;
+  }
+
+  /* Back arrow */
+  .back-arrow {
+    position: absolute;
+    top: 20px;
+    left: 28px;
+    cursor: pointer;
+  }
+  .back-arrow svg {
+    width: 24px;
+    height: 24px;
+    color: #2D2D3A;
+  }
+
+  /* Main content centered */
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 32px;
+    margin-top: -40px;
+  }
+
+  /* Section: Trainer */
+  .section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    color: #81809E;
+    text-align: center;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  /* Trainer avatars */
+  .trainer-row {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+  }
+
+  .trainer-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .avatar-ring {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 2.5px solid transparent;
+    padding: 3px;
+    transition: border-color 0.2s;
+  }
+  .avatar-ring.selected {
+    border-color: #7C4DFF;
+  }
+  .avatar-ring .avatar-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  /* Placeholder avatar illustration */
+  .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    color: #fff;
+  }
+  .avatar-placeholder.alan { background: linear-gradient(135deg, #c9b8a8, #a89888); }
+  .avatar-placeholder.lina { background: linear-gradient(135deg, #8b6f5e, #6b4f3e); }
+
+  .trainer-name {
+    font-size: 14px;
+    color: #81809E;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .trainer-item.selected .trainer-name {
+    color: #7C4DFF;
+  }
+
+  /* Speed pills */
+  .pills-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .pill {
+    width: 60px;
+    height: 40px;
+    border-radius: 25px;
+    border: 1.5px solid #CDCDE0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: #81809E;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    font-weight: 400;
+  }
+  .pill:hover {
+    border-color: #a88eff;
+    color: #a88eff;
+  }
+  .pill.selected {
+    border-color: #7C4DFF;
+    color: #7C4DFF;
+    font-weight: 500;
+  }
+
+  /* Comparison layout */
+  .comparison-wrapper {
+    display: flex;
+    gap: 60px;
+    align-items: flex-start;
+  }
+
+  .mockup-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .label-tag {
+    background: #7C4DFF;
+    color: white;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .label-tag.current {
+    background: #ff5252;
+  }
+
+  /* ===== CURRENT DESIGN (simplified) ===== */
+  .phone-frame.current {
+    transform: scale(0.85);
+    opacity: 0.7;
+  }
+  .current .screen-content-scroll {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 30px;
+    height: calc(100% - 50px);
+    overflow-y: auto;
+    position: relative;
+  }
+  .current .header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 16px 0;
+  }
+  .current .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .current .header-left span {
+    color: #7C4DFF;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .current .section-block {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .current .section-block .stitle {
+    font-size: 13px;
+    color: #81809E;
+    text-align: center;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .current .yes-no-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+  }
+  .current .yes-no-btn {
+    flex: 1;
+    height: 36px;
+    border-radius: 20px;
+    border: 1px solid #CDCDE0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #81809E;
+  }
+  .current .mini-trainer-row {
+    display: flex;
+    gap: 16px;
+  }
+  .current .mini-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #fff;
+  }
+  .current .mini-pills {
+    display: flex;
+    gap: 8px;
+  }
+  .current .mini-pill {
+    width: 50px;
+    height: 34px;
+    border-radius: 20px;
+    border: 1px solid #CDCDE0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #81809E;
+  }
+  .current .divider-line {
+    width: 100%;
+    height: 1px;
+    background: #f1f1f2;
+    margin: 8px 0;
+  }
+  .current .btn-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    margin-top: 16px;
+    padding-bottom: 30px;
+  }
+  .current .btn-cancel, .current .btn-save {
+    flex: 1;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  .current .btn-cancel {
+    border: 1px solid #7C4DFF;
+    color: #7C4DFF;
+    background: #fff;
+  }
+  .current .btn-save {
+    background: #7C4DFF;
+    color: #fff;
+    border: none;
+  }
+
+  /* Annotations */
+  .annotations {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+  }
+
+  /* Legend below */
+  .legend {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 30px;
+    padding: 24px 32px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.1);
+    max-width: 800px;
+    width: 100%;
+  }
+  .legend h3 {
+    color: #fff;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .dot-red { background: #ff5252; }
+  .dot-green { background: #4CAF50; }
+  .dot-purple { background: #7C4DFF; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .comparison-wrapper {
+      flex-direction: column;
+      gap: 30px;
+      align-items: center;
+    }
+    .phone-frame.current { transform: scale(1); }
+  }
+</style>
+</head>
+<body>
+
+<div style="display: flex; flex-direction: column; align-items: center; padding: 40px 20px;">
+
+  <h1 style="color: #fff; font-size: 24px; margin-bottom: 8px; font-family: -apple-system, sans-serif; font-weight: 600;">
+    Settings Screen Redesign
+  </h1>
+  <p style="color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 40px;">
+    Current (left) vs Figma Design (right)
+  </p>
+
+  <div class="comparison-wrapper">
+
+    <!-- ===== CURRENT DESIGN ===== -->
+    <div class="mockup-container">
+      <span class="label-tag current">Current Code</span>
+      <div class="phone-frame current">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+          </div>
+        </div>
+        <div class="screen-content-scroll">
+          <!-- Header with Settings text + notification -->
+          <div class="header-bar">
+            <div class="header-left">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D2D3A" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <span>Settings</span>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D2D3A" stroke-width="1.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </div>
+
+          <!-- Section 1: Sound -->
+          <div class="section-block">
+            <p class="stitle">Enable Personal Trainer's speech</p>
+            <div class="yes-no-row">
+              <div class="yes-no-btn" style="border-color:#7C4DFF; color:#7C4DFF;">yes</div>
+              <div class="yes-no-btn">no</div>
+            </div>
+          </div>
+
+          <!-- Section 2: Trainer -->
+          <div class="section-block">
+            <p class="stitle">Choose your Personal Trainer's voice</p>
+            <div class="mini-trainer-row">
+              <div style="text-align:center">
+                <div class="mini-avatar alan" style="background:linear-gradient(135deg,#c9b8a8,#a89888);">👤</div>
+                <span style="font-size:11px;color:#81809E;margin-top:4px;display:block">ALAN</span>
+              </div>
+              <div style="text-align:center">
+                <div class="mini-avatar lina" style="background:linear-gradient(135deg,#8b6f5e,#6b4f3e);border:2px solid #7C4DFF;">👤</div>
+                <span style="font-size:11px;color:#7C4DFF;margin-top:4px;display:block">LINA</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider-line"></div>
+
+          <!-- Section 3: Delay (UNUSED BUG) -->
+          <div class="section-block">
+            <p class="stitle">How long do you need before we start counting?</p>
+            <div class="mini-pills">
+              <div class="mini-pill">2s</div>
+              <div class="mini-pill" style="border-color:#7C4DFF;color:#7C4DFF;">3s</div>
+              <div class="mini-pill">4s</div>
+              <div class="mini-pill">5s</div>
+            </div>
+          </div>
+
+          <!-- Section 4: Speed -->
+          <div class="section-block">
+            <p class="stitle">Depending on your speed, you can choose how fast we count between each rep</p>
+            <div class="mini-pills">
+              <div class="mini-pill">2s</div>
+              <div class="mini-pill">3s</div>
+              <div class="mini-pill" style="border-color:#7C4DFF;color:#7C4DFF;">4s</div>
+              <div class="mini-pill">5s</div>
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="btn-row">
+            <div class="btn-cancel">Cancel</div>
+            <div class="btn-save">Save</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== NEW DESIGN (FIGMA) ===== -->
+    <div class="mockup-container">
+      <span class="label-tag">Figma Design</span>
+      <div class="phone-frame">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+          </div>
+        </div>
+        <div class="screen-content">
+          <!-- Back arrow only -->
+          <div class="back-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#2D2D3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </div>
+
+          <div class="main-content">
+            <!-- Section 1: Trainer -->
+            <div class="section">
+              <p class="section-title">Choose your Personal Trainer</p>
+              <div class="trainer-row">
+                <div class="trainer-item">
+                  <div class="avatar-ring">
+                    <div class="avatar-placeholder alan">👤</div>
+                  </div>
+                  <span class="trainer-name">ALAN</span>
+                </div>
+                <div class="trainer-item selected">
+                  <div class="avatar-ring selected">
+                    <div class="avatar-placeholder lina">👤</div>
+                  </div>
+                  <span class="trainer-name" style="color:#7C4DFF">LINA</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 2: Speed -->
+            <div class="section">
+              <p class="section-title">Depend on your speed, we give you<br>option to choose how fast we count<br>(between each rep)</p>
+              <div class="pills-row">
+                <div class="pill selected">2s</div>
+                <div class="pill">3s</div>
+                <div class="pill">4s</div>
+                <div class="pill">5s</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Legend / Changes -->
+  <div class="legend">
+    <h3>Thay doi so voi code hien tai:</h3>
+    <div class="legend-item">
+      <div class="legend-dot dot-red"></div>
+      <span><strong>XOA:</strong> Header "Settings" text + notifications icon → chi giu mui ten back</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot dot-red"></div>
+      <span><strong>XOA:</strong> Section "Enable Personal Trainer's speech" (Yes/No)</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot dot-red"></div>
+      <span><strong>XOA:</strong> Section "How long before start counting?" (selectedDelay) — setting nay luu nhung khong dung</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot dot-red"></div>
+      <span><strong>XOA:</strong> Divider line giua cac sections</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot dot-green"></div>
+      <span><strong>GIU:</strong> Trainer selection (ALAN / LINA) voi avatar + purple border khi selected</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot dot-green"></div>
+      <span><strong>GIU:</strong> Speed pills (2s, 3s, 4s, 5s) voi purple border khi selected</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot dot-purple"></div>
+      <span><strong>DOI:</strong> Title "Choose your Personal Trainer's voice" → "Choose your Personal Trainer"</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot dot-purple"></div>
+      <span><strong>DOI:</strong> Text speed section cho dung Figma wording</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot dot-purple"></div>
+      <span><strong>DOI:</strong> Layout — content can giua doc man hinh, spacing rong hon</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot dot-purple"></div>
+      <span><strong>CAN XAC NHAN:</strong> Cancel/Save buttons — Figma khong show. Giu? Bo? Auto-save?</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

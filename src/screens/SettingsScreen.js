@@ -2,10 +2,11 @@ import React, { useContext, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SettingsContext } from '../SettingsContext';
+import ScreenHeader from '../components/screen-header';
 
 const ClickableItem = ({ imageSource, name, isSelected, onPress }) => {
     return (
-        <TouchableOpacity onPress={onPress} style={[styles.trainersContainer, isSelected && styles.selectedTrainer]}>
+        <TouchableOpacity onPress={onPress} style={styles.trainersContainer}>
             <View style={[styles.imageContainer, isSelected && styles.selectedImageContainer]}>
                 <Image source={imageSource} style={styles.image} />
             </View>
@@ -16,128 +17,68 @@ const ClickableItem = ({ imageSource, name, isSelected, onPress }) => {
 
 const SettingsScreen = ({ navigation }) => {
     const { selectedTrainer, setSelectedTrainer, selectedTime, setSelectedTime,
-            selectedPlaySoundsOption, setSelectedPlaySoundsOption,
-            selectedDelay, setSelectedDelay, saveSettings } = useContext(SettingsContext);
+            selectedPlaySoundsOption, selectedDelay, saveSettings } = useContext(SettingsContext);
     const [localSelectedTrainer, setLocalSelectedTrainer] = useState(selectedTrainer);
     const [localSelectedTime, setLocalSelectedTime] = useState(selectedTime);
-    const [localSelectedPlaySoundsOption, setLocalSelectedPlaySoundsOption] = useState(selectedPlaySoundsOption);
-    const [localSelectedDelay, setLocalSelectedDelay] = useState(selectedDelay);
-
-    const handlePress = (trainerId) => {
-        setLocalSelectedTrainer(trainerId);
-    };
-
-    const handleTimePress = (time) => {
-        setLocalSelectedTime(time);
-    };
-
-    const handlePlaySoundsOptionPress = (playSounds) => {
-            setLocalSelectedPlaySoundsOption(playSounds);
-        };
-
-    const handleDelayPress = (delay) => {
-            setLocalSelectedDelay(delay);
-        };
 
     const handleSave = () => {
         setSelectedTrainer(localSelectedTrainer);
         setSelectedTime(localSelectedTime);
-        setSelectedPlaySoundsOption(localSelectedPlaySoundsOption);
-        setSelectedDelay(localSelectedDelay);
-        saveSettings(localSelectedTrainer, localSelectedTime, localSelectedPlaySoundsOption, localSelectedDelay);
+        // Keep existing values for settings not shown in UI
+        saveSettings(localSelectedTrainer, localSelectedTime, selectedPlaySoundsOption, selectedDelay);
         navigation.goBack();
     };
 
     return (
         <SafeAreaView style={styles.safeArea}>
+            <ScreenHeader showBack title="Settings" showSettings={false} showNotification={false} onBack={() => navigation.goBack()} />
             <View style={styles.container}>
-                <View style={styles.iconsContainer}>
-                    <View style={styles.backContainer}>
-                        <TouchableOpacity onPress={() => navigation.goBack()}>
-                            <Image source={require('../../assets/arrow-back.png')} style={styles.backIcon} />
-                        </TouchableOpacity>
-                        <Text style={styles.settingsText}>Settings</Text>
+                <View style={styles.mainContent}>
+                    {/* Section 1: Choose Trainer */}
+                    <Text style={styles.title}>Choose your Personal Trainer</Text>
+                    <View style={styles.trainerRow}>
+                        <ClickableItem
+                            imageSource={require('../../assets/trainer-alan.png')}
+                            name="ALAN"
+                            isSelected={localSelectedTrainer === "1"}
+                            onPress={() => setLocalSelectedTrainer("1")}
+                        />
+                        <ClickableItem
+                            imageSource={require('../../assets/trainer-lina.png')}
+                            name="LINA"
+                            isSelected={localSelectedTrainer === "2"}
+                            onPress={() => setLocalSelectedTrainer("2")}
+                        />
                     </View>
-                    <TouchableOpacity onPress={() => console.log('Notifications icon clicked')}>
-                        <Image source={require('../../assets/notifications-icon.png')} style={styles.notificationsIcon} />
-                    </TouchableOpacity>
-                </View>
-            <Text style={styles.title}>Enable Personal Trainer's speech</Text>
-            <View style={styles.soundOptionsContainer}>
-                {['yes', 'no'].map((playSounds) => (
-                    <TouchableOpacity
-                        key={playSounds}
-                        onPress={() => handlePlaySoundsOptionPress(playSounds)}
-                        style={[
-                            styles.soundOption,
-                            localSelectedPlaySoundsOption === playSounds && styles.selectedTimeOption,
-                        ]}
-                    >
-                        <Text
-                            style={[
-                                styles.timeOptionText,
-                                localSelectedPlaySoundsOption === playSounds && styles.selectedTimeOptionText,
-                            ]}
-                        >
-                            {playSounds}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
-            <Text style={styles.title}>Choose your Personal Trainer's voice</Text>
-            <View style={styles.trainerRow}>
-                <ClickableItem imageSource={require('../../assets/trainer-alan.png')} name="ALAN"
-                    isSelected={localSelectedTrainer === "1"}
-                    onPress={() => handlePress("1")} />
-                <ClickableItem imageSource={require('../../assets/trainer-lina.png')} name="LINA"
-                    isSelected={localSelectedTrainer === "2"}
-                    onPress={() => handlePress("2")} />
-            </View>
-            <View style={styles.divider} />
-            <Text style={styles.title}>How long do you need before we start counting?</Text>
-            <View style={styles.delayOptionsContainer}>
-                {['2s', '3s', '4s', '5s'].map((delay) => (
-                    <TouchableOpacity
-                        key={delay}
-                        onPress={() => handleDelayPress(delay)}
-                        style={[
-                            styles.timeOption,
-                            localSelectedDelay === delay && styles.selectedTimeOption,
-                        ]}
-                    >
-                        <Text
-                            style={[
-                                styles.timeOptionText,
-                                localSelectedDelay === delay && styles.selectedTimeOptionText,
-                            ]}
-                        >
-                            {delay}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
-            <Text style={styles.title}>Depending on your speed, you can choose how fast we count between each rep</Text>
-                        <View style={styles.timeOptionsContainer}>
-                            {['2s', '3s', '4s', '5s'].map((time) => (
-                                <TouchableOpacity
-                                    key={time}
-                                    onPress={() => handleTimePress(time)}
+
+                    {/* Section 2: Rep speed */}
+                    <Text style={styles.title}>
+                        Depend on your speed, we give you option to choose how fast we count (between each rep)
+                    </Text>
+                    <View style={styles.timeOptionsContainer}>
+                        {['2s', '3s', '4s', '5s'].map((time) => (
+                            <TouchableOpacity
+                                key={time}
+                                onPress={() => setLocalSelectedTime(time)}
+                                style={[
+                                    styles.timeOption,
+                                    localSelectedTime === time && styles.selectedTimeOption,
+                                ]}
+                            >
+                                <Text
                                     style={[
-                                        styles.timeOption,
-                                        localSelectedTime === time && styles.selectedTimeOption,
+                                        styles.timeOptionText,
+                                        localSelectedTime === time && styles.selectedTimeOptionText,
                                     ]}
                                 >
-                                    <Text
-                                        style={[
-                                            styles.timeOptionText,
-                                            localSelectedTime === time && styles.selectedTimeOptionText,
-                                        ]}
-                                    >
-                                        {time}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </View>
+                                    {time}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+
+                {/* Bottom buttons */}
                 <View style={styles.buttonRow}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.cancelBtn}>
                         <Text style={styles.cancelBtnTxt}>Cancel</Text>
@@ -160,123 +101,69 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
         alignItems: 'center',
-        justifyContent: 'center',
     },
-    iconsContainer: {
-        position: 'absolute',
-        top: 10,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '80%',
-        zIndex: 1,
-    },
-    backContainer: {
-        flexDirection: 'row',
+    mainContent: {
+        flex: 1,
         alignItems: 'center',
-    },
-    backIcon: {
-        width: 24,
-        height: 24,
-    },
-    settingsText: {
-        fontFamily: 'Overpass-Bold',
-        fontSize: 20,
-        color: '#7C4DFF',
-        marginLeft: 20,
-    },
-    notificationsIcon: {
-        width: 24,
-        height: 24,
+        justifyContent: 'center',
+        width: '100%',
     },
     title: {
         color: "#81809E",
         fontFamily: 'Overpass',
         fontSize: 16,
-        marginTop: 20,
+        marginBottom: 20,
         width: '80%',
         textAlign: 'center',
-    },
-    soundOptionsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '80%',
-        marginTop: 10,
-        marginBottom: 15,
-    },
-    soundOption: {
-        width: "48%",
-        height: 40,
-        borderRadius: 30,
-        borderWidth: 1,
-        borderColor: '#81809E',
-        justifyContent: 'center',
-        alignItems: 'center',
+        lineHeight: 24,
     },
     trainerRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '80%',
-        marginTop: 10,
-        marginBottom: 15,
+        justifyContent: 'center',
+        gap: 24,
+        marginBottom: 40,
     },
     trainersContainer: {
         alignItems: 'center',
-        width: '46%',
     },
     imageContainer: {
         borderRadius: 75,
         overflow: 'hidden',
-        width: 150,
-        height: 150,
-        borderWidth: 2,
+        width: 120,
+        height: 120,
+        borderWidth: 2.5,
         borderColor: 'transparent',
     },
     image: {
         width: '100%',
         height: '100%',
-        borderRadius: 50,
-    },
-    divider: {
-        marginTop: 5,
-        height: 1,
-        width: '80%',
-        backgroundColor: '#F1F1F2',
-      },
-    trainerText: {
-        marginTop: 10,
-        fontFamily: 'Overpass',
-        fontSize: 16,
-        color: '#81809E',
-    },
-    selectedTrainer: {
-    // Additional styling for selected item
+        borderRadius: 60,
     },
     selectedImageContainer: {
         borderColor: "#7C4DFF",
     },
-    selectedtrainerText: {
-        color: "#7C4DFF",
-    },
-    delayOptionsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '80%',
+    trainerText: {
         marginTop: 10,
-        marginBottom: 15,
+        fontFamily: 'Overpass',
+        fontSize: 14,
+        color: '#81809E',
+        letterSpacing: 1.5,
+        textTransform: 'uppercase',
+    },
+    selectedTrainerText: {
+        color: "#7C4DFF",
     },
     timeOptionsContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '80%',
-        marginTop: 10,
-        marginBottom: 110,
+        justifyContent: 'center',
+        gap: 12,
     },
     timeOption: {
-        width: "22%",
+        width: 60,
         height: 40,
-        borderRadius: 30,
-        borderWidth: 1,
-        borderColor: '#81809E',
+        borderRadius: 25,
+        borderWidth: 1.5,
+        borderColor: '#CDCDE0',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -286,48 +173,44 @@ const styles = StyleSheet.create({
     timeOptionText: {
         color: '#81809E',
         fontFamily: 'Overpass',
-        fontSize: 16,
+        fontSize: 15,
     },
     selectedTimeOptionText: {
         color: "#7C4DFF",
+        fontWeight: '500',
     },
     buttonRow: {
-        position: 'absolute',
-        bottom: 60,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        width: '80%', // Ensures buttons take full width of their container
-        marginTop: 20,
+        width: '80%',
+        paddingBottom: 40,
+        gap: 12,
     },
     cancelBtn: {
-        marginTop:20,
-        backgroundColor:"white",
+        flex: 1,
+        backgroundColor: "white",
         padding: 16,
         borderRadius: 16,
-        width: "47%",
         alignItems: "center",
-        borderWidth: 1, // Add border width
-        borderColor: "#7C4DFF", // Add border color
+        borderWidth: 1,
+        borderColor: "#7C4DFF",
     },
     cancelBtnTxt: {
-        color:"#7C4DFF",
-        textTransform: 'none',
+        color: "#7C4DFF",
         fontFamily: 'Overpass-Bold',
         fontSize: 20,
     },
     saveBtn: {
-        marginTop:20,
-        backgroundColor:"#7C4DFF",
+        flex: 1,
+        backgroundColor: "#7C4DFF",
         padding: 16,
         borderRadius: 16,
-        width: "47%",
         alignItems: "center",
-        borderWidth: 1, // Add border width
-        borderColor: "#7C4DFF", // Add border color
+        borderWidth: 1,
+        borderColor: "#7C4DFF",
     },
     saveBtnTxt: {
-        color:"white",
-        textTransform: 'none',
+        color: "white",
         fontFamily: 'Overpass-Bold',
         fontSize: 20,
     },

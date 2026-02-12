@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { StatusBar, StyleSheet, Text, Image, View, TextInput, TouchableOpacity, Animated, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import WheelPicker from 'react-native-wheely';
+import * as Haptics from 'expo-haptics';
+import { Audio } from 'expo-av';
 import AnimatedBubble from '../components/AnimatedBubble';
 import ScreenHeader from '../components/screen-header';
-import BottomIndicatorBar from '../components/BottomIndicatorBar';
 import theme from '../theme';
 
 
@@ -19,6 +20,39 @@ const arrayRange = (start, stop, step) =>
 const MainScreen = () => {
 
     const logoScale = useRef(new Animated.Value(1)).current;
+    const tickSoundRef = useRef(null);
+
+    // Preload tick sound for picker scroll feedback
+    useEffect(() => {
+        const loadTickSound = async () => {
+            try {
+                const { sound } = await Audio.Sound.createAsync(
+                    require('../../assets/sounds/tick.wav')
+                );
+                tickSoundRef.current = sound;
+            } catch (e) {
+                // Silently fail - haptic still works without sound
+            }
+        };
+        loadTickSound();
+        return () => {
+            if (tickSoundRef.current) {
+                tickSoundRef.current.unloadAsync();
+            }
+        };
+    }, []);
+
+    // Play tick sound + haptic on picker scroll
+    const playTickFeedback = useCallback(async () => {
+        Haptics.selectionAsync();
+        try {
+            if (tickSoundRef.current) {
+                await tickSoundRef.current.replayAsync();
+            }
+        } catch (e) {
+            // Ignore playback errors
+        }
+    }, []);
 
     const startQuote = { text: "tap to start", audio: "" };
     const [inputText, setInputText] = useState('My Workout');
@@ -117,7 +151,7 @@ const MainScreen = () => {
                             <WheelPicker
                                 selectedIndex={selectedSetsIndex}
                                 options={setOptions}
-                                onChange={(index) => { Keyboard.dismiss(); setSelectedSetsIndex(index); }}
+                                onChange={(index) => { playTickFeedback(); Keyboard.dismiss(); setSelectedSetsIndex(index); }}
                                 selectedIndicatorStyle={styles.wheelPickerSelectedIndicator}
                                 itemTextStyle={styles.wheelPickerItemText}
                                 itemHeight={35}
@@ -129,7 +163,7 @@ const MainScreen = () => {
                             <WheelPicker
                                 selectedIndex={selectedRepsIndex}
                                 options={repOptions}
-                                onChange={(index) => { Keyboard.dismiss(); setSelectedRepsIndex(index); }}
+                                onChange={(index) => { playTickFeedback(); Keyboard.dismiss(); setSelectedRepsIndex(index); }}
                                 selectedIndicatorStyle={styles.wheelPickerSelectedIndicator}
                                 itemTextStyle={styles.wheelPickerItemText}
                                 itemHeight={35}
@@ -141,7 +175,7 @@ const MainScreen = () => {
                             <WheelPicker
                                 selectedIndex={selectedBreaksIndex}
                                 options={breakOptions}
-                                onChange={(index) => { Keyboard.dismiss(); setSelectedBreaksIndex(index); }}
+                                onChange={(index) => { playTickFeedback(); Keyboard.dismiss(); setSelectedBreaksIndex(index); }}
                                 selectedIndicatorStyle={styles.wheelPickerSelectedIndicator}
                                 itemTextStyle={styles.wheelPickerItemText}
                                 itemHeight={35}
@@ -149,8 +183,6 @@ const MainScreen = () => {
                             />
                         </View>
                     </View>
-
-                    <BottomIndicatorBar color={theme.colors.primary} />
 
                     <StatusBar style="auto" />
                 </View>

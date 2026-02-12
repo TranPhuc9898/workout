@@ -13,11 +13,12 @@ import theme from '../theme';
 
 const WorkoutScreen = ({ route }) => {
     const { workoutName, sets, reps, breakTime } = route.params || {};
-    const { selectedTrainer, selectedTime, selectedPlaySoundsOption } = useContext(SettingsContext);
+    const { selectedTrainer, selectedTime, selectedPlaySoundsOption, selectedDelay } = useContext(SettingsContext);
 
-    const trainerId = selectedTrainer;
-    const timeBetweenRepsInSec = parseInt(selectedTime);
+    const trainerId = selectedTrainer || "1";
+    const timeBetweenRepsInSec = parseInt(selectedTime) || 2;
     const playSounds = (selectedPlaySoundsOption === 'yes');
+    const delayInSec = parseInt(selectedDelay) || 5;
 
     const finalQuotes = [
         { text: "Great job, you crushed it today!", audio: "great_job_" + trainerId + ".mp3" },
@@ -168,7 +169,7 @@ const WorkoutScreen = ({ route }) => {
             <View style={styles.container}>
 
             <View style={styles.bubbleContainer}>
-                {elapsed <= 3 &&
+                {elapsed <= delayInSec &&
                     <AnimatedBubble quote={startQuote} duration={2000} playSound={playSounds}/>}
                 {isComplete && totalWorkoutTimeInSec > 0 &&
                     <AnimatedBubble quote={randomFinalQuote} playSound={playSounds}/>}
@@ -302,6 +303,7 @@ const styles = StyleSheet.create({
         fontFamily: theme.fonts.bold,
         margin: 10,
         marginBottom: 20,
+        color: '#81809E',
     },
     h2: {
         fontSize: 26,
@@ -311,19 +313,21 @@ const styles = StyleSheet.create({
     horizontalProgressBarContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        marginTop: 12,
         marginBottom: 20,
     },
     buttonRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '80%',
-        gap: 12,
+        gap: 9,
         marginBottom: 30,
     },
     cancelBtn: {
         backgroundColor: '#272641',
-        paddingVertical: 16,
-        borderRadius: 30,
+        paddingVertical: 10,
+        paddingHorizontal: 18,
+        borderRadius: 8,
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
@@ -331,12 +335,13 @@ const styles = StyleSheet.create({
     cancelBtnTxt: {
         color: theme.colors.white,
         fontFamily: theme.fonts.bold,
-        fontSize: 16,
+        fontSize: 14,
     },
     pauseBtn: {
         backgroundColor: theme.colors.primary,
-        paddingVertical: 16,
-        borderRadius: 30,
+        paddingVertical: 10,
+        paddingHorizontal: 18,
+        borderRadius: 8,
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
@@ -344,7 +349,7 @@ const styles = StyleSheet.create({
     pauseBtnTxt: {
         color: theme.colors.white,
         fontFamily: theme.fonts.bold,
-        fontSize: 16,
+        fontSize: 14,
     },
     overlay: {
         flex: 1,

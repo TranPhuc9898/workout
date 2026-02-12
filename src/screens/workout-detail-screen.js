@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import theme from '../theme';
+import ScreenHeader from '../components/screen-header';
 import ExpandableExerciseCard from '../components/expandable-exercise-card';
 import {
   getExercisesByMuscle,
@@ -30,20 +31,11 @@ const WorkoutDetailScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header with back button */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.backButton}>‹</Text>
-        </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>{title}</Text>
-          <Text style={styles.headerSubtitle}>
-            {allExercises.length} Exercises
-          </Text>
-        </View>
-        <View style={styles.backButton} />
-      </View>
-
+      <ScreenHeader
+        showBack
+        title={title}
+        onBack={() => navigation.goBack()}
+      />
       {/* Exercise list with pagination */}
       <FlatList
         data={displayedExercises}
@@ -70,34 +62,6 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderLight,
-  },
-  backButton: {
-    fontSize: 36,
-    color: theme.colors.primary,
-    width: 30,
-  },
-  headerCenter: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontFamily: theme.fonts.bold,
-    color: theme.colors.textPrimary,
-  },
-  headerSubtitle: {
-    fontSize: 13,
-    fontFamily: theme.fonts.regular,
-    color: theme.colors.textSecondary,
-    marginTop: 2,
   },
   listContainer: {
     paddingHorizontal: 20,

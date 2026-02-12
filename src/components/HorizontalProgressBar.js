@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
         height: 5,
         backgroundColor: theme.colors.progressGray,
         borderRadius: 10,
-        marginBottom: 5,
+        marginBottom: 4,
     },
     progressBar: {
         height: '100%',
@@ -93,10 +93,12 @@ const styles = StyleSheet.create({
         width: '80%',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        paddingHorizontal: 1,
+        marginTop: 4,
     },
     timeText: {
-        color: theme.colors.progressGray,
+        color: theme.colors.textDark,
+        fontSize: 13,
+        fontFamily: theme.fonts.regular,
     },
 });
 

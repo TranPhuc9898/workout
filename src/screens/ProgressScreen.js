@@ -42,7 +42,7 @@ const ProgressScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <ScreenHeader showBack title="Progress" onBack={() => navigation.navigate('Main')} />
+      <ScreenHeader showBack title="" layout="progress" onBack={() => navigation.navigate('Main')} />
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
 
         {/* Progress Cards (Horizontal Scroll) */}
