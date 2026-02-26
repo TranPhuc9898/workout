@@ -17,7 +17,10 @@ const SettingsProvider = ({ children }) => {
                 const savedPlaySoundsOption = await AsyncStorage.getItem('selectedPlaySoundsOption');
                 const savedDelay = await AsyncStorage.getItem('selectedDelay');
                 setSelectedTrainer(savedItem || "1"); // Default to "1"
-                setSelectedTime(savedTime || "2s"); // Default to "2s"
+                // Migrate old values (2s/3s/4s) → new pace values
+                const validPaces = ['5s', '10s', '20s'];
+                const migratedTime = validPaces.includes(savedTime) ? savedTime : '5s';
+                setSelectedTime(migratedTime); // Default to Light (5s)
                 setSelectedPlaySoundsOption(savedPlaySoundsOption || "yes"); //defaults to true
                 setSelectedDelay(savedDelay || "5s"); // Default to "5s"
             } catch (error) {

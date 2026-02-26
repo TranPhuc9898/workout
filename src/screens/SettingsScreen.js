@@ -51,27 +51,29 @@ const SettingsScreen = ({ navigation }) => {
                         />
                     </View>
 
-                    {/* Section 2: Rep speed */}
-                    <Text style={styles.title}>
-                        Depend on your speed, we give you option to choose how fast we count (between each rep)
-                    </Text>
+                    {/* Section 2: Workout pace */}
+                    <Text style={styles.title}>Choose your workout pace</Text>
                     <View style={styles.timeOptionsContainer}>
-                        {['2s', '3s', '4s', '5s'].map((time) => (
+                        {[
+                            { label: 'Light', value: '5s' },
+                            { label: 'Normal', value: '10s' },
+                            { label: 'Heavy', value: '20s' },
+                        ].map((pace) => (
                             <TouchableOpacity
-                                key={time}
-                                onPress={() => setLocalSelectedTime(time)}
+                                key={pace.value}
+                                onPress={() => setLocalSelectedTime(pace.value)}
                                 style={[
                                     styles.timeOption,
-                                    localSelectedTime === time && styles.selectedTimeOption,
+                                    localSelectedTime === pace.value && styles.selectedTimeOption,
                                 ]}
                             >
                                 <Text
                                     style={[
                                         styles.timeOptionText,
-                                        localSelectedTime === time && styles.selectedTimeOptionText,
+                                        localSelectedTime === pace.value && styles.selectedTimeOptionText,
                                     ]}
                                 >
-                                    {time}
+                                    {pace.label}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -159,7 +161,7 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     timeOption: {
-        width: 60,
+        paddingHorizontal: 20,
         height: 40,
         borderRadius: 25,
         borderWidth: 1.5,

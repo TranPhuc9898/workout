@@ -9,6 +9,8 @@ import CircularProgressBar from '../components/CircularProgressBar';
 import HorizontalProgressBar from '../components/HorizontalProgressBar';
 import BottomSheet from '../components/BottomSheet';
 import BottomIndicatorBar from '../components/BottomIndicatorBar';
+import { MILESTONE_SOUNDS } from '../data/sound-registry';
+import useWorkoutAudio from '../hooks/use-workout-audio';
 import theme from '../theme';
 
 const WorkoutScreen = ({ route }) => {
@@ -20,23 +22,26 @@ const WorkoutScreen = ({ route }) => {
     const playSounds = (selectedPlaySoundsOption === 'yes');
     const delayInSec = parseInt(selectedDelay) || 5;
 
-    const finalQuotes = [
-        { text: "Great job, you crushed it today!", audio: "great_job_" + trainerId + ".mp3" },
-        { text: "That was an awesome workout, well done!", audio: "great_job_" + trainerId + ".mp3" },
-        { text: "You pushed yourself hard, I'm proud of you!", audio: "great_job_" + trainerId + ".mp3" },
-        { text: "Excellent work, you gave it your all!", audio: "great_job_" + trainerId + ".mp3" },
-        { text: "You really showed up and put in the effort!", audio: "great_job_" + trainerId + ".mp3" },
-        { text: "You're getting stronger every day, keep it up!", audio: "great_job_" + trainerId + ".mp3" },
-        { text: "Fantastic session, your dedication is paying off!", audio: "great_job_" + trainerId + ".mp3" },
-        { text: "You should feel really proud of what you accomplished!", audio: "great_job_" + trainerId + ".mp3" },
-        { text: "You've earned that rest, great work today!", audio: "great_job_" + trainerId + ".mp3" },
-        { text: "Another workout in the books, amazing job!", audio: "great_job_" + trainerId + ".mp3" },
-    ];
+    const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-    const startQuote = { text: "Give me everything you got!", audio: "give_me_everything_" + trainerId + ".mp3" };
-    const quarterQuote = { text: "Great job! Keep pushing!", audio: "great_job_keep_pushing_" + trainerId + ".mp3" };
-    const halfQuote = { text: "Halfway through, this is where the real progress happens!!", audio: "halfway_through_" + trainerId + ".mp3" };
-    const threeQuarterQuote = { text: "Almost done! Your future self will thank you later", audio: "almost_done_" + trainerId + ".mp3" };
+    // Stable quote refs — initialized once to avoid re-triggering AnimatedBubble audio on every tick
+    const startQuoteRef = useRef({ text: "Give me everything you got!", audio: pickRandom(MILESTONE_SOUNDS.start) });
+    const quarterQuoteRef = useRef({ text: "Great job! Keep pushing!", audio: pickRandom(MILESTONE_SOUNDS.quarter) });
+    const halfQuoteRef = useRef({ text: "Halfway through, this is where the real progress happens!!", audio: pickRandom(MILESTONE_SOUNDS.half) });
+    const threeQuarterQuoteRef = useRef({ text: "Almost done! Your future self will thank you later", audio: pickRandom(MILESTONE_SOUNDS.threeQuarter) });
+
+    const finalQuotes = [
+        { text: "Great job, you crushed it today!", audio: pickRandom(MILESTONE_SOUNDS.complete) },
+        { text: "That was an awesome workout, well done!", audio: pickRandom(MILESTONE_SOUNDS.complete) },
+        { text: "You pushed yourself hard, I'm proud of you!", audio: pickRandom(MILESTONE_SOUNDS.complete) },
+        { text: "Excellent work, you gave it your all!", audio: pickRandom(MILESTONE_SOUNDS.complete) },
+        { text: "You really showed up and put in the effort!", audio: pickRandom(MILESTONE_SOUNDS.complete) },
+        { text: "You're getting stronger every day, keep it up!", audio: pickRandom(MILESTONE_SOUNDS.complete) },
+        { text: "Fantastic session, your dedication is paying off!", audio: pickRandom(MILESTONE_SOUNDS.complete) },
+        { text: "You should feel really proud of what you accomplished!", audio: pickRandom(MILESTONE_SOUNDS.complete) },
+        { text: "You've earned that rest, great work today!", audio: pickRandom(MILESTONE_SOUNDS.complete) },
+        { text: "Another workout in the books, amazing job!", audio: pickRandom(MILESTONE_SOUNDS.complete) },
+    ];
 
     // Workout timing constants
     const totalWorkoutTimeInSec = sets * reps * timeBetweenRepsInSec + ((sets - 1) * breakTime);
@@ -124,6 +129,19 @@ const WorkoutScreen = ({ route }) => {
         }
     }, [isComplete]);
 
+    // Voice rep counting + motivational audio (extracted to custom hook)
+    useWorkoutAudio({
+        playSounds,
+        reps,
+        timeBetweenRepsInSec,
+        completedRepsInSet,
+        currentSet,
+        isInBreak,
+        isPaused,
+        isComplete,
+        elapsed,
+    });
+
     const handlePauseResume = () => {
         setIsPaused(prev => !prev);
     };
@@ -170,15 +188,15 @@ const WorkoutScreen = ({ route }) => {
 
             <View style={styles.bubbleContainer}>
                 {elapsed <= delayInSec &&
-                    <AnimatedBubble quote={startQuote} duration={2000} playSound={playSounds}/>}
+                    <AnimatedBubble quote={startQuoteRef.current} duration={2000} playSound={playSounds}/>}
                 {isComplete && totalWorkoutTimeInSec > 0 &&
                     <AnimatedBubble quote={randomFinalQuote} playSound={playSounds}/>}
                 {elapsed >= q1 && elapsed < q1 + 3 &&
-                    <AnimatedBubble quote={quarterQuote} duration={2000} playSound={playSounds}/>}
+                    <AnimatedBubble quote={quarterQuoteRef.current} duration={2000} playSound={playSounds}/>}
                 {elapsed >= q2 && elapsed < q2 + 3 &&
-                    <AnimatedBubble quote={halfQuote} duration={3000} playSound={playSounds}/>}
+                    <AnimatedBubble quote={halfQuoteRef.current} duration={3000} playSound={playSounds}/>}
                 {elapsed >= q3 && elapsed < q3 + 3 &&
-                    <AnimatedBubble quote={threeQuarterQuote} duration={3000} playSound={playSounds}/>}
+                    <AnimatedBubble quote={threeQuarterQuoteRef.current} duration={3000} playSound={playSounds}/>}
             </View>
 
             <View style={styles.progressBarContainer}>
