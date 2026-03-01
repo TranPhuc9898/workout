@@ -21,6 +21,7 @@ const CircularProgressBar = ({
     totalSets,
     showTrainerImage = false,
     trainerId = "1",
+    exerciseGif = null, // exercise GIF URL from workout detail flow
 }) => {
     const [showFadingImage, setShowFadingImage] = useState(false);
     const imageOpacity = useRef(new Animated.Value(1)).current;
@@ -108,28 +109,56 @@ const CircularProgressBar = ({
 
     const shouldShowTrainer = showTrainerImage || showFadingImage;
 
+    const trainerSource = trainerId === "1"
+        ? require('../../assets/trainer-alan.png')
+        : require('../../assets/trainer-lina.png');
+
+    // Ring size: bigger when exerciseGif to fit GIF nicely
+    const ringSize = exerciseGif ? 340 : 280;
+    const imageSize = exerciseGif ? 260 : 270;
+    const imageRadius = imageSize / 2;
+
     return (
         <View style={styles.container}>
+            {/* Exercise GIF - always visible as background when available */}
+            {exerciseGif && (
+                <View
+                    style={{
+                        position: 'absolute',
+                        width: imageSize,
+                        height: imageSize,
+                        borderRadius: imageRadius,
+                        backgroundColor: '#F0EFF5',
+                        overflow: 'hidden',
+                        zIndex: 0,
+                    }}
+                >
+                    <Image
+                        source={{ uri: exerciseGif }}
+                        style={{ width: imageSize, height: imageSize }}
+                        resizeMode="contain"
+                    />
+                </View>
+            )}
+
+            {/* Trainer image - fade in/out at milestones (overlays GIF when both present) */}
             {shouldShowTrainer && (
                 <Animated.View
                     style={[
                         StyleSheet.absoluteFill,
-                        { width: 230, height: 230, borderRadius: 120, zIndex: 0 },
+                        { width: imageSize, height: imageSize, borderRadius: imageRadius, zIndex: 1 },
                         { opacity: imageOpacity },
                     ]}
                 >
                     <Image
-                        source={trainerId === "1"
-                            ? require('../../assets/trainer-alan.png')
-                            : require('../../assets/trainer-lina.png')
-                        }
-                        style={{ width: '100%', height: '100%', borderRadius: 120 }}
+                        source={trainerSource}
+                        style={{ width: '100%', height: '100%', borderRadius: imageRadius }}
                         resizeMode="cover"
                     />
                 </Animated.View>
             )}
 
-            <Svg height="240" width="240" viewBox="0 0 100 100">
+            <Svg height={ringSize} width={ringSize} viewBox="0 0 100 100">
                 {/* Background ring */}
                 <Circle
                     cx="50" cy="50" r={radius}
@@ -159,14 +188,11 @@ const CircularProgressBar = ({
                 ))}
             </Svg>
 
-            {/* Center text - rep count or break countdown */}
-            {!showTrainerImage && (
+            {/* Center text - hidden when trainer or exerciseGif is showing */}
+            {!showTrainerImage && !exerciseGif && (
                 <View style={[StyleSheet.absoluteFill, styles.centerContainer]}>
                     <Text style={[styles.centerText, { color: textColor }]}>
                         {centerText}
-                    </Text>
-                    <Text style={[styles.subLabel, { color: textColor }]}>
-                        {subLabel}
                     </Text>
                 </View>
             )}

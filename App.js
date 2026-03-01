@@ -5,6 +5,10 @@ import { SettingsProvider } from './src/SettingsContext';
 import IntroScreen from './src/screens/IntroScreen';
 import MainScreen from './src/screens/MainScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import GearSettingsScreen from './src/screens/gear-settings-screen';
+import WorkoutBuddyScreen from './src/screens/workout-buddy-screen';
+import TermsOfUseScreen from './src/screens/terms-of-use-screen';
+import BuddyInviteScreen from './src/screens/buddy-invite-screen';
 import WorkoutScreen from './src/screens/WorkoutScreen';
 import ProgressScreen from './src/screens/ProgressScreen';
 import WorkoutDetailScreen from './src/screens/workout-detail-screen';
@@ -58,6 +62,10 @@ export default function App() {
                     <Stack.Screen name="Intro" component={IntroScreen} />
                     <Stack.Screen name="Main" component={MainScreen} />
                     <Stack.Screen name="Settings" component={SettingsScreen} />
+                    <Stack.Screen name="GearSettings" component={GearSettingsScreen} />
+                    <Stack.Screen name="WorkoutBuddy" component={WorkoutBuddyScreen} />
+                    <Stack.Screen name="TermsOfUse" component={TermsOfUseScreen} />
+                    <Stack.Screen name="BuddyInvite" component={BuddyInviteScreen} />
                     <Stack.Screen name="Workout" component={WorkoutScreen} />
                     <Stack.Screen name="Progress" component={ProgressScreen} />
                     <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />

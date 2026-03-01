@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { StatusBar, StyleSheet, Text, Image, View, TextInput, TouchableOpacity, Animated, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect, useRef } from 'react';
+import { StatusBar, StyleSheet, Text, View, Image, TouchableOpacity, Animated, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import WheelPicker from 'react-native-wheely';
-import * as Haptics from 'expo-haptics';
-import { Audio } from 'expo-av';
+import { Picker } from '@react-native-picker/picker';
 import AnimatedBubble from '../components/AnimatedBubble';
 import ScreenHeader from '../components/screen-header';
 import theme from '../theme';
@@ -20,42 +18,14 @@ const arrayRange = (start, stop, step) =>
 const MainScreen = () => {
 
     const logoScale = useRef(new Animated.Value(1)).current;
-    const tickSoundRef = useRef(null);
+    const route = useRoute();
 
-    // Preload tick sound for picker scroll feedback
-    useEffect(() => {
-        const loadTickSound = async () => {
-            try {
-                const { sound } = await Audio.Sound.createAsync(
-                    require('../../assets/sounds/tick.wav')
-                );
-                tickSoundRef.current = sound;
-            } catch (e) {
-                // Silently fail - haptic still works without sound
-            }
-        };
-        loadTickSound();
-        return () => {
-            if (tickSoundRef.current) {
-                tickSoundRef.current.unloadAsync();
-            }
-        };
-    }, []);
-
-    // Play tick sound + haptic on picker scroll
-    const playTickFeedback = useCallback(async () => {
-        Haptics.selectionAsync();
-        try {
-            if (tickSoundRef.current) {
-                await tickSoundRef.current.replayAsync();
-            }
-        } catch (e) {
-            // Ignore playback errors
-        }
-    }, []);
+    // Exercise data passed from workout detail screen
+    const exerciseName = route.params?.exerciseName || null;
+    const exerciseGif = route.params?.exerciseGif || null;
 
     const startQuote = { text: "tap to start", audio: "" };
-    const [inputText, setInputText] = useState('My Workout');
+    const [inputText, setInputText] = useState(exerciseName || 'My Workout');
     const navigation = useNavigation();
 
     const minSetsOption = 1;
@@ -107,19 +77,21 @@ const MainScreen = () => {
 
     const handleStartWorkout = () => {
         navigation.navigate('Workout', {
-                                        workoutName: inputText,
-                                        sets: selectedSetsIndex + minSetsOption,
-                                        reps: selectedRepsIndex + minRepsOption,
-                                        breakTime: selectedBreaksIndex + minBreakOption,});
+            workoutName: inputText,
+            sets: selectedSets,
+            reps: selectedReps,
+            breakTime: selectedBreak,
+            exerciseGif: exerciseGif,
+        });
     };
 
     const setOptions = arrayRange(1, 10, 1);
     const repOptions = arrayRange(5, 30, 1);
     const breakOptions = arrayRange(10, 180, 1);
 
-    const [selectedSetsIndex, setSelectedSetsIndex] = useState(defaultSetsOption - minSetsOption);
-    const [selectedRepsIndex, setSelectedRepsIndex] = useState(defaultRepsOption - minRepsOption);
-    const [selectedBreaksIndex, setSelectedBreaksIndex] = useState(defaultBreakOption - minBreakOption);
+    const [selectedSets, setSelectedSets] = useState(defaultSetsOption);
+    const [selectedReps, setSelectedReps] = useState(defaultRepsOption);
+    const [selectedBreak, setSelectedBreak] = useState(defaultBreakOption);
 
     return (
         <SafeAreaView style={styles.safeArea}>
@@ -135,10 +107,18 @@ const MainScreen = () => {
                     </View>
 
                     <TouchableOpacity onPress={() => handleStartWorkout()}>
-                        <Animated.Image
-                            source={require('../../assets/logo.png')}
-                            style={[styles.logo, { transform: [{ scale: logoScale }] }]}
-                        />
+                        {exerciseGif ? (
+                            <Animated.Image
+                                source={{ uri: exerciseGif }}
+                                style={[styles.logo, { transform: [{ scale: logoScale }], borderRadius: 140 }]}
+                                resizeMode="contain"
+                            />
+                        ) : (
+                            <Animated.Image
+                                source={require('../../assets/logo.png')}
+                                style={[styles.logo, { transform: [{ scale: logoScale }] }]}
+                            />
+                        )}
                     </TouchableOpacity>
 
                     <Text style={styles.defaultSetupText}>Default setup for workout</Text>
@@ -146,41 +126,55 @@ const MainScreen = () => {
                     <StatusBar style="auto" />
 
                     <View style={styles.row}>
+                        {/* Set Picker */}
                         <View style={styles.columnContainer}>
                             <Text style={styles.column}>Set</Text>
-                            <WheelPicker
-                                selectedIndex={selectedSetsIndex}
-                                options={setOptions}
-                                onChange={(index) => { playTickFeedback(); Keyboard.dismiss(); setSelectedSetsIndex(index); }}
-                                selectedIndicatorStyle={styles.wheelPickerSelectedIndicator}
-                                itemTextStyle={styles.wheelPickerItemText}
-                                itemHeight={35}
-                                visibleRest={1}
-                            />
+                            <View style={styles.pickerWrapper}>
+                                <Picker
+                                    selectedValue={selectedSets}
+                                    onValueChange={(value) => { Keyboard.dismiss(); setSelectedSets(value); }}
+                                    style={styles.picker}
+                                    itemStyle={styles.pickerItem}
+                                >
+                                    {setOptions.map((val) => (
+                                        <Picker.Item key={val} label={String(val).padStart(2, '0')} value={val} />
+                                    ))}
+                                </Picker>
+                            </View>
                         </View>
+
+                        {/* Rep Picker */}
                         <View style={styles.columnContainer}>
                             <Text style={styles.column}>Rep</Text>
-                            <WheelPicker
-                                selectedIndex={selectedRepsIndex}
-                                options={repOptions}
-                                onChange={(index) => { playTickFeedback(); Keyboard.dismiss(); setSelectedRepsIndex(index); }}
-                                selectedIndicatorStyle={styles.wheelPickerSelectedIndicator}
-                                itemTextStyle={styles.wheelPickerItemText}
-                                itemHeight={35}
-                                visibleRest={1}
-                            />
+                            <View style={styles.pickerWrapper}>
+                                <Picker
+                                    selectedValue={selectedReps}
+                                    onValueChange={(value) => { Keyboard.dismiss(); setSelectedReps(value); }}
+                                    style={styles.picker}
+                                    itemStyle={styles.pickerItem}
+                                >
+                                    {repOptions.map((val) => (
+                                        <Picker.Item key={val} label={String(val)} value={val} />
+                                    ))}
+                                </Picker>
+                            </View>
                         </View>
+
+                        {/* Break Picker */}
                         <View style={styles.columnContainer}>
                             <Text style={styles.column}>Break(s)</Text>
-                            <WheelPicker
-                                selectedIndex={selectedBreaksIndex}
-                                options={breakOptions}
-                                onChange={(index) => { playTickFeedback(); Keyboard.dismiss(); setSelectedBreaksIndex(index); }}
-                                selectedIndicatorStyle={styles.wheelPickerSelectedIndicator}
-                                itemTextStyle={styles.wheelPickerItemText}
-                                itemHeight={35}
-                                visibleRest={1}
-                            />
+                            <View style={styles.pickerWrapper}>
+                                <Picker
+                                    selectedValue={selectedBreak}
+                                    onValueChange={(value) => { Keyboard.dismiss(); setSelectedBreak(value); }}
+                                    style={styles.picker}
+                                    itemStyle={styles.pickerItem}
+                                >
+                                    {breakOptions.map((val) => (
+                                        <Picker.Item key={val} label={String(val)} value={val} />
+                                    ))}
+                                </Picker>
+                            </View>
                         </View>
                     </View>
 
@@ -243,18 +237,19 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         textAlign: "center",
     },
-    wheelPickerSelectedIndicator: {
-        backgroundColor: 'transparent',
-        borderColor: 'transparent',
-        width: '100%',
-        textAlign: "center",
+    pickerWrapper: {
+        height: 120,
+        overflow: 'hidden',
     },
-    wheelPickerItemText: {
+    picker: {
+        width: 110,
+        height: 120,
+    },
+    pickerItem: {
         fontFamily: theme.fonts.semiBold,
-        fontSize: 24,
+        fontSize: 22,
         color: theme.colors.primary,
-        width: '100%',
-        textAlign: "center",
+        height: 120,
     },
 });
 

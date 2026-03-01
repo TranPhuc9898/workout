@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import theme from '../theme';
 
-// Tappable exercise card - expands to show GIF + instructions
+// Tappable exercise card - expands to show GIF + instructions + start button
 const ExpandableExerciseCard = ({ item, index }) => {
+  const navigation = useNavigation();
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -58,6 +60,18 @@ const ExpandableExerciseCard = ({ item, index }) => {
               </Text>
             </View>
           ))}
+
+          {/* Start exercise button */}
+          <TouchableOpacity
+            style={styles.startBtn}
+            onPress={() => navigation.navigate('Main', {
+              exerciseName: item.name,
+              exerciseGif: item.gifUrl || null,
+            })}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.startBtnText}>Start Exercise</Text>
+          </TouchableOpacity>
         </View>
       )}
     </TouchableOpacity>
@@ -168,6 +182,18 @@ const styles = StyleSheet.create({
     color: theme.colors.textPrimary,
     flex: 1,
     lineHeight: 19,
+  },
+  startBtn: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    marginTop: 14,
+  },
+  startBtnText: {
+    color: theme.colors.white,
+    fontFamily: theme.fonts.bold,
+    fontSize: 15,
   },
 });
 

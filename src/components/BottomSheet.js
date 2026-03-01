@@ -1,12 +1,30 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import LottieView from 'lottie-react-native';
 import theme from '../theme';
 
-const BottomSheet = ({totalReps, calories, onClose, onNextExercise, onViewHistory }) => {
+const BottomSheet = ({totalReps, calories, onClose, onNextExercise, onViewHistory, workoutName }) => {
+    const [name, setName] = useState(workoutName || '');
+
     return (
         <View style={styles.container}>
-            <Image source={require('../../assets/thumbs_up.png')} style={styles.icon} />
+            <LottieView
+                source={require('../../assets/animations/trophy.json')}
+                autoPlay
+                loop={false}
+                style={styles.lottieIcon}
+            />
             <Text style={styles.text}>Great job! Workout completed</Text>
+
+            {/* Name your workout */}
+            <Text style={styles.nameLabel}>Name your workout</Text>
+            <TextInput
+                style={styles.nameInput}
+                value={name}
+                onChangeText={setName}
+                placeholder="Front chest - dumbells"
+                placeholderTextColor={theme.colors.textMuted}
+            />
             <View style={styles.statsContainer}>
                 <View style={styles.statsContainerItem}>
                     <Text style={styles.stats}>{totalReps}</Text>
@@ -45,16 +63,35 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
     },
-    icon: {
-        width: 128,
-        height: 128,
-        marginBottom: 20,
+    lottieIcon: {
+        width: 150,
+        height: 150,
+        marginBottom: 10,
     },
     text: {
         fontFamily: theme.fonts.bold,
         fontSize: 20,
-        marginBottom: 20,
+        marginBottom: 12,
         textAlign: 'center',
+    },
+    nameLabel: {
+        fontFamily: theme.fonts.regular,
+        fontSize: 14,
+        color: theme.colors.textPrimary,
+        alignSelf: 'flex-start',
+        marginLeft: '10%',
+        marginBottom: 6,
+    },
+    nameInput: {
+        backgroundColor: theme.colors.backgroundSecondary,
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        fontFamily: theme.fonts.regular,
+        fontSize: 15,
+        color: theme.colors.textPrimary,
+        width: '80%',
+        marginBottom: 4,
     },
     statsContainer: {
         backgroundColor: theme.colors.backgroundSecondary,

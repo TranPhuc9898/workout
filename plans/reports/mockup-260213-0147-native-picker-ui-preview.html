@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Native iOS Picker - UI Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .phone-frame {
+    width: 375px;
+    height: 700px;
+    background: #fff;
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    position: relative;
+  }
+
+  .notch {
+    width: 150px;
+    height: 30px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    margin: 0 auto;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    height: 100%;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 5px;
+    margin-bottom: 10px;
+  }
+  .header-icons { display: flex; gap: 12px; }
+  .header-icon {
+    width: 20px; height: 20px;
+    background: #81809E;
+    border-radius: 4px;
+    opacity: 0.5;
+  }
+
+  /* Bubble */
+  .bubble {
+    background: #F3F6FB;
+    padding: 8px 20px;
+    border-radius: 20px;
+    margin-bottom: 15px;
+    color: #81809E;
+    font-size: 13px;
+  }
+
+  /* Logo */
+  .logo-area {
+    width: 200px;
+    height: 200px;
+    background: linear-gradient(135deg, #7C4DFF22, #7C4DFF11);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+  }
+  .logo-text {
+    font-size: 48px;
+    color: #7C4DFF;
+    font-weight: bold;
+  }
+
+  .setup-text {
+    color: #81809E;
+    font-size: 13px;
+    margin-bottom: 25px;
+  }
+
+  /* Comparison Layout */
+  .comparison {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+  }
+
+  .version {
+    text-align: center;
+  }
+  .version-label {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    padding: 4px 16px;
+    border-radius: 12px;
+  }
+  .version-label.before { background: #ff4444; }
+  .version-label.after { background: #22cc55; }
+
+  /* Picker Section */
+  .picker-row {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    padding: 0 15px;
+  }
+
+  .picker-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90px;
+  }
+
+  .picker-label {
+    color: #81809E;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  /* === BEFORE: react-native-wheely style === */
+  .wheely-picker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .wheely-item {
+    font-size: 14px;
+    color: #7C4DFF88;
+    font-weight: 600;
+    padding: 4px 0;
+  }
+  .wheely-item.selected {
+    font-size: 24px;
+    color: #7C4DFF;
+    font-weight: 700;
+  }
+
+  /* === AFTER: Native iOS UIPickerView style === */
+  .native-picker {
+    position: relative;
+    height: 120px;
+    width: 90px;
+    overflow: hidden;
+  }
+
+  /* Selection indicator - the gray lines iOS shows */
+  .native-picker-selection {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 36px;
+    transform: translateY(-50%);
+    border-top: 0.5px solid #C6C6C8;
+    border-bottom: 0.5px solid #C6C6C8;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .native-picker-items {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 42px;
+  }
+
+  .native-item {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    transition: all 0.1s;
+  }
+
+  /* 3D perspective effect like UIPickerView */
+  .native-item.far-top {
+    font-size: 16px;
+    color: #7C4DFF44;
+    transform: perspective(200px) rotateX(35deg) scale(0.85);
+    opacity: 0.4;
+  }
+  .native-item.near-top {
+    font-size: 18px;
+    color: #7C4DFF88;
+    transform: perspective(200px) rotateX(15deg) scale(0.95);
+    opacity: 0.7;
+  }
+  .native-item.selected {
+    font-size: 22px;
+    color: #7C4DFF;
+    font-weight: 700;
+    transform: none;
+    opacity: 1;
+  }
+  .native-item.near-bottom {
+    font-size: 18px;
+    color: #7C4DFF88;
+    transform: perspective(200px) rotateX(-15deg) scale(0.95);
+    opacity: 0.7;
+  }
+  .native-item.far-bottom {
+    font-size: 16px;
+    color: #7C4DFF44;
+    transform: perspective(200px) rotateX(-35deg) scale(0.85);
+    opacity: 0.4;
+  }
+
+  /* Sound indicator */
+  .sound-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #7C4DFF;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 12px;
+  }
+
+  .no-sound-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #ccc;
+    color: #666;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 12px;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    width: 134px;
+    height: 5px;
+    background: #7C4DFF;
+    border-radius: 3px;
+    margin-top: auto;
+    margin-bottom: 8px;
+  }
+
+  /* Side-by-side phones */
+  .phones-row {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+  }
+
+  .phone-label {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  .phone-label span {
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .phone-label span.old { background: #ff4757; }
+  .phone-label span.new { background: #2ed573; }
+
+  .feature-list {
+    color: #aaa;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 10px;
+    line-height: 1.8;
+  }
+  .feature-list .check { color: #2ed573; }
+  .feature-list .cross { color: #ff4757; }
+
+  h1 {
+    color: #fff;
+    font-size: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  h1 span { color: #7C4DFF; }
+</style>
+</head>
+<body>
+
+<div style="display: flex; flex-direction: column; align-items: center; padding: 30px;">
+
+  <h1>Picker UI Comparison: <span>Before</span> vs <span>After</span></h1>
+
+  <div class="phones-row">
+
+    <!-- BEFORE -->
+    <div>
+      <div class="phone-label"><span class="old">BEFORE (react-native-wheely)</span></div>
+      <div class="phone-frame">
+        <div class="notch"></div>
+        <div class="content">
+          <div class="header">
+            <div class="header-icons"><div class="header-icon"></div></div>
+            <div class="header-icons"><div class="header-icon"></div><div class="header-icon"></div></div>
+          </div>
+
+          <div class="bubble">tap to start</div>
+
+          <div class="logo-area">
+            <div class="logo-text">W</div>
+          </div>
+
+          <div class="setup-text">Default setup for workout</div>
+
+          <div class="picker-row">
+            <div class="picker-column">
+              <div class="picker-label">Set</div>
+              <div class="wheely-picker">
+                <div class="wheely-item">02</div>
+                <div class="wheely-item selected">03</div>
+                <div class="wheely-item">04</div>
+              </div>
+            </div>
+            <div class="picker-column">
+              <div class="picker-label">Rep</div>
+              <div class="wheely-picker">
+                <div class="wheely-item">12</div>
+                <div class="wheely-item selected">13</div>
+                <div class="wheely-item">14</div>
+              </div>
+            </div>
+            <div class="picker-column">
+              <div class="picker-label">Break(s)</div>
+              <div class="wheely-picker">
+                <div class="wheely-item">12</div>
+                <div class="wheely-item selected">13</div>
+                <div class="wheely-item">14</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="no-sound-badge">&#x1f507; No tick sound</div>
+
+          <div class="feature-list">
+            <div><span class="cross">&#x2717;</span> No native tick sound</div>
+            <div><span class="cross">&#x2717;</span> JS-based scroll (less smooth)</div>
+            <div><span class="cross">&#x2717;</span> No 3D wheel effect</div>
+            <div><span class="check">&#x2713;</span> Haptic only (manual)</div>
+          </div>
+
+          <div class="bottom-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFTER -->
+    <div>
+      <div class="phone-label"><span class="new">AFTER (@react-native-picker/picker)</span></div>
+      <div class="phone-frame">
+        <div class="notch"></div>
+        <div class="content">
+          <div class="header">
+            <div class="header-icons"><div class="header-icon"></div></div>
+            <div class="header-icons"><div class="header-icon"></div><div class="header-icon"></div></div>
+          </div>
+
+          <div class="bubble">tap to start</div>
+
+          <div class="logo-area">
+            <div class="logo-text">W</div>
+          </div>
+
+          <div class="setup-text">Default setup for workout</div>
+
+          <div class="picker-row">
+            <div class="picker-column">
+              <div class="picker-label">Set</div>
+              <div class="native-picker">
+                <div class="native-picker-selection"></div>
+                <div class="native-picker-items">
+                  <div class="native-item near-top">02</div>
+                  <div class="native-item selected">03</div>
+                  <div class="native-item near-bottom">04</div>
+                </div>
+              </div>
+            </div>
+            <div class="picker-column">
+              <div class="picker-label">Rep</div>
+              <div class="native-picker">
+                <div class="native-picker-selection"></div>
+                <div class="native-picker-items">
+                  <div class="native-item near-top">14</div>
+                  <div class="native-item selected">15</div>
+                  <div class="native-item near-bottom">16</div>
+                </div>
+              </div>
+            </div>
+            <div class="picker-column">
+              <div class="picker-label">Break(s)</div>
+              <div class="native-picker">
+                <div class="native-picker-selection"></div>
+                <div class="native-picker-items">
+                  <div class="native-item near-top">14</div>
+                  <div class="native-item selected">15</div>
+                  <div class="native-item near-bottom">16</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="sound-badge">&#x1f50a; Native iOS tick sound + haptic</div>
+
+          <div class="feature-list">
+            <div><span class="check">&#x2713;</span> Native UIPickerView tick sound</div>
+            <div><span class="check">&#x2713;</span> Native scroll physics (smooth)</div>
+            <div><span class="check">&#x2713;</span> 3D wheel perspective effect</div>
+            <div><span class="check">&#x2713;</span> Auto haptic feedback</div>
+            <div><span class="check">&#x2713;</span> Selection indicator lines</div>
+          </div>
+
+          <div class="bottom-bar"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

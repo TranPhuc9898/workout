@@ -33,7 +33,7 @@ const WorkoutDetailScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <ScreenHeader
         showBack
-        title={title}
+        layout="progress"
         onBack={() => navigation.goBack()}
       />
       {/* Exercise list with pagination */}

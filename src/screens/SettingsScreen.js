@@ -1,8 +1,9 @@
 import React, { useContext, useState } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { SettingsContext } from '../SettingsContext';
-import ScreenHeader from '../components/screen-header';
+import theme from '../theme';
 
 const ClickableItem = ({ imageSource, name, isSelected, onPress }) => {
     return (
@@ -31,7 +32,15 @@ const SettingsScreen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <ScreenHeader showBack title="Settings" showSettings={false} showNotification={false} onBack={() => navigation.goBack()} />
+            {/* Header: ← back on left, ⚙️ gear on right */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn}>
+                    <Ionicons name="arrow-back" size={24} color={theme.colors.textPrimary} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('GearSettings')} style={styles.headerBtn}>
+                    <Ionicons name="settings-outline" size={24} color={theme.colors.textPrimary} />
+                </TouchableOpacity>
+            </View>
             <View style={styles.container}>
                 <View style={styles.mainContent}>
                     {/* Section 1: Choose Trainer */}
@@ -98,6 +107,19 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: '#fff',
+    },
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+    },
+    headerBtn: {
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     container: {
         flex: 1,

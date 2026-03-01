@@ -3,18 +3,19 @@ import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SettingsContext } from '../SettingsContext';
 import AnimatedBubble from '../components/AnimatedBubble';
 import CircularProgressBar from '../components/CircularProgressBar';
-import HorizontalProgressBar from '../components/HorizontalProgressBar';
 import BottomSheet from '../components/BottomSheet';
 import BottomIndicatorBar from '../components/BottomIndicatorBar';
+import ScreenHeader from '../components/screen-header';
 import { MILESTONE_SOUNDS } from '../data/sound-registry';
 import useWorkoutAudio from '../hooks/use-workout-audio';
 import theme from '../theme';
 
 const WorkoutScreen = ({ route }) => {
-    const { workoutName, sets, reps, breakTime } = route.params || {};
+    const { workoutName, sets, reps, breakTime, exerciseGif } = route.params || {};
     const { selectedTrainer, selectedTime, selectedPlaySoundsOption, selectedDelay } = useContext(SettingsContext);
 
     const trainerId = selectedTrainer || "1";
@@ -58,10 +59,6 @@ const WorkoutScreen = ({ route }) => {
     const isComplete = elapsed >= totalWorkoutTimeInSec;
 
     // Derive all workout state from elapsed time
-    const timeRemaining = totalWorkoutTimeInSec - elapsed;
-    const progress = totalWorkoutTimeInSec > 0 ? elapsed / totalWorkoutTimeInSec : 0;
-
-    // Derive phase state from elapsed time
     let completedRepsInSet = 0;
     let isInBreak = false;
     let currentSet = 1;
@@ -156,10 +153,15 @@ const WorkoutScreen = ({ route }) => {
         navigation.navigate('Main');
     };
 
-    const handleNextExercise = () => {
+    const handleNextExercise = async () => {
         setShowBottomSheet(false);
+        const hasSeen = await AsyncStorage.getItem('hasSeenBuddyInvite');
         setTimeout(() => {
-            navigation.navigate('Main');
+            if (hasSeen === 'true') {
+                navigation.navigate('Main');
+            } else {
+                navigation.replace('BuddyInvite');
+            }
         }, 300);
     };
 
@@ -184,6 +186,7 @@ const WorkoutScreen = ({ route }) => {
 
     return (
         <SafeAreaView style={styles.safeArea}>
+            <ScreenHeader showBack={false} showSettings={true} showNotification={true} />
             <View style={styles.container}>
 
             <View style={styles.bubbleContainer}>
@@ -210,16 +213,19 @@ const WorkoutScreen = ({ route }) => {
                     totalSets={sets}
                     showTrainerImage={showTrainerAtMilestone}
                     trainerId={trainerId}
+                    exerciseGif={exerciseGif || null}
                 />
             </View>
 
-            <View style={styles.workoutDetailsContainer}>
-                <Text style={styles.h2}>{workoutName}</Text>
-                <Text style={styles.h1}>{formatTime(timeRemaining)}</Text>
-            </View>
-
-            <View style={styles.horizontalProgressBarContainer}>
-                <HorizontalProgressBar progress={progress} durationInSec={totalWorkoutTimeInSec} showTimeLabels={true}/>
+            {/* Set/Rep info + pace indicator below ring */}
+            <View style={styles.repSetContainer}>
+                <Text style={styles.repSetText}>
+                    Set <Text style={styles.repSetBold}>{currentSet}</Text> - Rep{' '}
+                    <Text style={styles.repSetBold}>
+                        {completedRepsInSet}/{reps}
+                    </Text>
+                </Text>
+                <Text style={styles.paceText}>⚡ {timeBetweenRepsInSec}s</Text>
             </View>
 
             {/* Cancel & Pause/Resume buttons */}
@@ -241,24 +247,13 @@ const WorkoutScreen = ({ route }) => {
                             onClose={handleCloseBottomSheet}
                             onNextExercise={handleNextExercise}
                             onViewHistory={handleViewHistory}
+                            workoutName={workoutName}
                         />
                     </View>
                 </Modal>
             </View>
         </SafeAreaView>
     );
-};
-
-const formatTime = (timeInSeconds) => {
-    const hours = Math.floor(timeInSeconds / 3600);
-    const minutes = Math.floor((timeInSeconds % 3600) / 60);
-    const seconds = timeInSeconds % 60;
-
-    if (hours > 0) {
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    } else {
-        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
 };
 
 const styles = StyleSheet.create({
@@ -308,31 +303,26 @@ const styles = StyleSheet.create({
         margin: 10,
         color: theme.colors.primary,
     },
-    workoutDetailsContainer: {
-        position: 'relative',
-        width: '100%',
-        height: 100,
-        justifyContent: 'center',
+    repSetContainer: {
         alignItems: 'center',
-        marginTop: 50,
-    },
-    h1: {
-        fontSize: 34,
-        fontFamily: theme.fonts.bold,
-        margin: 10,
+        marginTop: 20,
         marginBottom: 20,
-        color: '#81809E',
     },
-    h2: {
-        fontSize: 26,
+    repSetText: {
+        fontSize: 18,
+        fontFamily: theme.fonts.regular,
+        color: theme.colors.textMuted,
+    },
+    repSetBold: {
+        fontSize: 22,
         fontFamily: theme.fonts.bold,
-        margin: 10,
+        color: theme.colors.primary,
     },
-    horizontalProgressBarContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
+    paceText: {
+        fontSize: 24,
+        fontFamily: theme.fonts.bold,
+        color: theme.colors.primary,
         marginTop: 12,
-        marginBottom: 20,
     },
     buttonRow: {
         flexDirection: 'row',
@@ -342,24 +332,26 @@ const styles = StyleSheet.create({
         marginBottom: 30,
     },
     cancelBtn: {
-        backgroundColor: '#272641',
-        paddingVertical: 10,
+        backgroundColor: theme.colors.white,
+        borderWidth: 1.5,
+        borderColor: theme.colors.primary,
+        paddingVertical: 14,
         paddingHorizontal: 18,
-        borderRadius: 8,
+        borderRadius: 12,
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
     },
     cancelBtnTxt: {
-        color: theme.colors.white,
+        color: theme.colors.primary,
         fontFamily: theme.fonts.bold,
-        fontSize: 14,
+        fontSize: 15,
     },
     pauseBtn: {
         backgroundColor: theme.colors.primary,
-        paddingVertical: 10,
+        paddingVertical: 14,
         paddingHorizontal: 18,
-        borderRadius: 8,
+        borderRadius: 12,
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
@@ -367,7 +359,7 @@ const styles = StyleSheet.create({
     pauseBtnTxt: {
         color: theme.colors.white,
         fontFamily: theme.fonts.bold,
-        fontSize: 14,
+        fontSize: 15,
     },
     overlay: {
         flex: 1,
