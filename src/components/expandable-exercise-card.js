@@ -67,6 +67,7 @@ const ExpandableExerciseCard = ({ item, index }) => {
             onPress={() => navigation.navigate('Main', {
               exerciseName: item.name,
               exerciseGif: item.gifUrl || null,
+              exerciseMuscle: (item.targetMuscles && item.targetMuscles[0]) || null,
             })}
             activeOpacity={0.7}
           >

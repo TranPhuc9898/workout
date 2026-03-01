@@ -23,6 +23,7 @@ const MainScreen = () => {
     // Exercise data passed from workout detail screen
     const exerciseName = route.params?.exerciseName || null;
     const exerciseGif = route.params?.exerciseGif || null;
+    const exerciseMuscle = route.params?.exerciseMuscle || null;
 
     const startQuote = { text: "tap to start", audio: "" };
     const [inputText, setInputText] = useState(exerciseName || 'My Workout');
@@ -70,10 +71,12 @@ const MainScreen = () => {
         ).start();
     };
 
-    // Trigger the animation when the component mounts
+    // Only animate the logo (breathing effect) when no exercise GIF is shown
     useEffect(() => {
-        startAnimation();
-    }, []); // Empty dependency array ensures this effect runs only once
+        if (!exerciseGif) {
+            startAnimation();
+        }
+    }, []);
 
     const handleStartWorkout = () => {
         navigation.navigate('Workout', {
@@ -82,6 +85,7 @@ const MainScreen = () => {
             reps: selectedReps,
             breakTime: selectedBreak,
             exerciseGif: exerciseGif,
+            exerciseMuscle: exerciseMuscle,
         });
     };
 
@@ -106,13 +110,15 @@ const MainScreen = () => {
                         <AnimatedBubble quote={startQuote} delay={600}/>
                     </View>
 
-                    <TouchableOpacity onPress={() => handleStartWorkout()}>
+                    <TouchableOpacity onPress={() => handleStartWorkout()} activeOpacity={0.8}>
                         {exerciseGif ? (
-                            <Animated.Image
-                                source={{ uri: exerciseGif }}
-                                style={[styles.logo, { transform: [{ scale: logoScale }], borderRadius: 140 }]}
-                                resizeMode="contain"
-                            />
+                            <View style={styles.gifRing}>
+                                <Image
+                                    source={{ uri: exerciseGif }}
+                                    style={styles.gifImage}
+                                    resizeMode="contain"
+                                />
+                            </View>
                         ) : (
                             <Animated.Image
                                 source={require('../../assets/logo.png')}
@@ -210,6 +216,23 @@ const styles = StyleSheet.create({
         width: 280,
         height: 280,
         marginBottom: 30,
+    },
+    gifRing: {
+        width: 280,
+        height: 280,
+        borderRadius: 140,
+        borderWidth: 5,
+        borderColor: theme.colors.primary,
+        backgroundColor: '#F0EFF5',
+        overflow: 'hidden',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 30,
+    },
+    gifImage: {
+        width: 260,
+        height: 260,
+        borderRadius: 130,
     },
     defaultSetupText: {
         color: theme.colors.textSecondary,

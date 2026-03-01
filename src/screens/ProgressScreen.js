@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, FlatList, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
 import ScreenHeader from '../components/screen-header';
 import theme from '../theme';
 import {
@@ -8,13 +9,7 @@ import {
   getFilteredExercises,
   getWorkoutGroups,
 } from '../data/exercise-data-provider';
-
-// Progress cards still hardcoded (no workout tracking backend yet)
-const progressCards = [
-  { id: '1', completed: 5, total: 12, name: 'Chest Workout', timeRemaining: '15 min remaining' },
-  { id: '2', completed: 3, total: 20, name: 'Legs Workout', timeRemaining: '23 min remaining' },
-  { id: '3', completed: 7, total: 15, name: 'Arms Workout', timeRemaining: '10 min remaining' },
-];
+import { getProgressByMuscle } from '../data/workout-history-storage';
 
 const categoryLabels = CATEGORY_FILTERS.map((f) => f.label);
 
@@ -23,12 +18,33 @@ const PAGE_SIZE = 20;
 const ProgressScreen = ({ navigation }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [page, setPage] = useState(1);
+  const [progressCards, setProgressCards] = useState([]);
 
   // Filter exercises then group by primaryMuscles
   const workoutGroups = useMemo(() => {
     const filtered = getFilteredExercises(selectedCategory);
     return getWorkoutGroups(filtered);
   }, [selectedCategory]);
+
+  // Load progress from AsyncStorage on screen focus
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        const counts = await getProgressByMuscle();
+        // Build progress cards from muscle groups that have completions
+        const allGroups = getWorkoutGroups(getFilteredExercises('All'));
+        const cards = allGroups
+          .filter((g) => counts[g.id])
+          .map((g) => ({
+            id: g.id,
+            completed: counts[g.id],
+            total: g.exerciseCount,
+            name: g.name,
+          }));
+        setProgressCards(cards);
+      })();
+    }, [])
+  );
 
   // Reset page when category changes
   const handleCategoryChange = (category) => {
@@ -45,21 +61,30 @@ const ProgressScreen = ({ navigation }) => {
       <ScreenHeader showBack title="" layout="progress" onBack={() => navigation.navigate('Main')} />
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
 
-        {/* Progress Cards (Horizontal Scroll) */}
-        <FlatList
-          horizontal
-          data={progressCards}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.progressCard}>
-              <Text style={styles.progressCount}>{item.completed}/{item.total}</Text>
-              <Text style={styles.progressName}>{item.name}</Text>
-              <Text style={styles.progressTime}>{item.timeRemaining}</Text>
-            </View>
-          )}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.progressCardsContainer}
-        />
+        {/* Progress Cards (Horizontal Scroll) — from completed workouts */}
+        {progressCards.length > 0 ? (
+          <FlatList
+            horizontal
+            data={progressCards}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.progressCard}
+                onPress={() => navigation.navigate('WorkoutDetail', { muscle: item.id, completedCount: item.completed })}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.progressCount}>{item.completed}/{item.total}</Text>
+                <Text style={styles.progressName}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.progressCardsContainer}
+          />
+        ) : (
+          <View style={styles.emptyProgress}>
+            <Text style={styles.emptyProgressText}>Complete a workout to track progress!</Text>
+          </View>
+        )}
 
         {/* Categories */}
         <Text style={styles.sectionTitle}>Categories</Text>
@@ -174,10 +199,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 4,
   },
-  progressTime: {
-    fontSize: 12,
+  emptyProgress: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  emptyProgressText: {
+    fontSize: 14,
     fontFamily: theme.fonts.regular,
-    color: theme.colors.textSecondary,
+    color: theme.colors.textMuted,
   },
   sectionTitle: {
     fontSize: 18,

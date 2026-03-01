@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import LottieView from 'lottie-react-native';
 import theme from '../theme';
 
@@ -7,55 +7,73 @@ const BottomSheet = ({totalReps, calories, onClose, onNextExercise, onViewHistor
     const [name, setName] = useState(workoutName || '');
 
     return (
-        <View style={styles.container}>
-            <LottieView
-                source={require('../../assets/animations/trophy.json')}
-                autoPlay
-                loop={false}
-                style={styles.lottieIcon}
-            />
-            <Text style={styles.text}>Great job! Workout completed</Text>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.keyboardAvoiding}
+        >
+            <ScrollView
+                bounces={false}
+                keyboardShouldPersistTaps="handled"
+                contentContainerStyle={styles.scrollContent}
+            >
+                <View style={styles.container}>
+                    <LottieView
+                        source={require('../../assets/animations/trophy.json')}
+                        autoPlay
+                        loop={false}
+                        style={styles.lottieIcon}
+                    />
+                    <Text style={styles.text}>Great job! Workout completed</Text>
 
-            {/* Name your workout */}
-            <Text style={styles.nameLabel}>Name your workout</Text>
-            <TextInput
-                style={styles.nameInput}
-                value={name}
-                onChangeText={setName}
-                placeholder="Front chest - dumbells"
-                placeholderTextColor={theme.colors.textMuted}
-            />
-            <View style={styles.statsContainer}>
-                <View style={styles.statsContainerItem}>
-                    <Text style={styles.stats}>{totalReps}</Text>
-                    <Text style={styles.statsType}>Total Reps</Text>
-                </View>
-                <View style={styles.verticalDivider} />
-                <View style={styles.statsContainerItem}>
-                    <Text style={styles.stats}>{calories}</Text>
-                    <Text style={styles.statsType}>Calories Burnt*</Text>
-                </View>
-            </View>
-            <View style={styles.buttonRow}>
-                <TouchableOpacity
-                    style={styles.nextButton}
-                    onPress={onNextExercise}
-                >
-                    <Text style={styles.nextButtonText}>Next Exercise</Text>
-                </TouchableOpacity>
+                    {/* Name your workout */}
+                    <Text style={styles.nameLabel}>Name your workout</Text>
+                    <TextInput
+                        style={styles.nameInput}
+                        value={name}
+                        onChangeText={setName}
+                        placeholder="Front chest - dumbells"
+                        placeholderTextColor={theme.colors.textMuted}
+                    />
+                    <View style={styles.statsContainer}>
+                        <View style={styles.statsContainerItem}>
+                            <Text style={styles.stats}>{totalReps}</Text>
+                            <Text style={styles.statsType}>Total Reps</Text>
+                        </View>
+                        <View style={styles.verticalDivider} />
+                        <View style={styles.statsContainerItem}>
+                            <Text style={styles.stats}>{calories}</Text>
+                            <Text style={styles.statsType}>Calories Burnt*</Text>
+                        </View>
+                    </View>
+                    <View style={styles.buttonRow}>
+                        <TouchableOpacity
+                            style={styles.nextButton}
+                            onPress={onNextExercise}
+                        >
+                            <Text style={styles.nextButtonText}>Next Exercise</Text>
+                        </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styles.historyButton}
-                    onPress={onViewHistory}
-                >
-                    <Text style={styles.historyButtonText}>Your History ➜</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+                        <TouchableOpacity
+                            style={styles.historyButton}
+                            onPress={onViewHistory}
+                        >
+                            <Text style={styles.historyButtonText}>Your History ➜</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </ScrollView>
+        </KeyboardAvoidingView>
         );
     };
 
 const styles = StyleSheet.create({
+    keyboardAvoiding: {
+        width: '100%',
+    },
+    scrollContent: {
+        flexGrow: 1,
+        justifyContent: 'flex-end',
+    },
     container: {
         backgroundColor: theme.colors.background,
         alignItems: 'center',

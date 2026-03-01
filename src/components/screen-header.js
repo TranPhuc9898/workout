@@ -39,7 +39,7 @@ const ScreenHeader = ({
 
   const render3dot = () => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('Settings')}
+      onPress={() => navigation.navigate('GearSettings')}
       style={styles.iconButton}
       activeOpacity={0.7}
     >

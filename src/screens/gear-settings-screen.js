@@ -9,8 +9,8 @@ const MENU_ITEMS = [
   { key: 'notifications', icon: 'notifications-outline', label: 'Notifications', screen: null },
   { key: 'sound', icon: 'volume-medium-outline', label: 'Sound & Voice', screen: null },
   { key: 'terms', icon: 'document-text-outline', label: 'Terms of Use', screen: 'TermsOfUse' },
-  { key: 'privacy', icon: 'shield-checkmark-outline', label: 'Privacy Policy', screen: null },
-  { key: 'about', icon: 'information-circle-outline', label: 'About', screen: null },
+  { key: 'privacy', icon: 'shield-checkmark-outline', label: 'Privacy Policy', screen: 'PrivacyPolicy' },
+  { key: 'about', icon: 'information-circle-outline', label: 'About', screen: 'About' },
 ];
 
 const GearSettingsScreen = ({ navigation }) => {

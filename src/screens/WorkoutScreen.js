@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { saveCompletedWorkout } from '../data/workout-history-storage';
 import { SettingsContext } from '../SettingsContext';
 import AnimatedBubble from '../components/AnimatedBubble';
 import CircularProgressBar from '../components/CircularProgressBar';
@@ -15,7 +16,7 @@ import useWorkoutAudio from '../hooks/use-workout-audio';
 import theme from '../theme';
 
 const WorkoutScreen = ({ route }) => {
-    const { workoutName, sets, reps, breakTime, exerciseGif } = route.params || {};
+    const { workoutName, sets, reps, breakTime, exerciseGif, exerciseMuscle } = route.params || {};
     const { selectedTrainer, selectedTime, selectedPlaySoundsOption, selectedDelay } = useContext(SettingsContext);
 
     const trainerId = selectedTrainer || "1";
@@ -64,11 +65,13 @@ const WorkoutScreen = ({ route }) => {
     let currentSet = 1;
     let breakTimeRemaining = 0;
     let ringProgress = 0; // 0-1 phase-specific (rep or break)
+    let repCountdown = timeBetweenRepsInSec; // countdown to next rep
 
     if (isComplete) {
         completedRepsInSet = reps;
         currentSet = sets;
         ringProgress = 1;
+        repCountdown = 0;
     } else {
         const cycleIndex = Math.min(Math.floor(elapsed / cycleDuration), sets - 1);
         const timeInCycle = elapsed - cycleIndex * cycleDuration;
@@ -78,6 +81,9 @@ const WorkoutScreen = ({ route }) => {
             // REP PHASE - ring fills smoothly based on time (not discrete rep steps)
             completedRepsInSet = Math.floor(timeInCycle / timeBetweenRepsInSec);
             ringProgress = timeInCycle / setDuration;
+            // Countdown: seconds remaining until next rep
+            const timeInCurrentRep = timeInCycle % timeBetweenRepsInSec;
+            repCountdown = timeBetweenRepsInSec - timeInCurrentRep;
         } else {
             // BREAK PHASE - ring fills over break duration
             completedRepsInSet = reps;
@@ -85,6 +91,7 @@ const WorkoutScreen = ({ route }) => {
             const breakElapsed = timeInCycle - setDuration;
             breakTimeRemaining = Math.max(breakTime - breakElapsed, 0);
             ringProgress = breakElapsed / breakTime;
+            repCountdown = 0;
         }
     }
 
@@ -119,10 +126,11 @@ const WorkoutScreen = ({ route }) => {
         };
     }, [isPaused, isComplete]);
 
-    // Workout completion
+    // Workout completion — save to history
     useEffect(() => {
         if (isComplete && totalWorkoutTimeInSec > 0) {
             setShowBottomSheet(true);
+            saveCompletedWorkout(workoutName, exerciseMuscle);
         }
     }, [isComplete]);
 
@@ -189,6 +197,7 @@ const WorkoutScreen = ({ route }) => {
             <ScreenHeader showBack={false} showSettings={true} showNotification={true} />
             <View style={styles.container}>
 
+            {/* Speech bubble floats above ring without taking layout space */}
             <View style={styles.bubbleContainer}>
                 {elapsed <= delayInSec &&
                     <AnimatedBubble quote={startQuoteRef.current} duration={2000} playSound={playSounds}/>}
@@ -225,7 +234,7 @@ const WorkoutScreen = ({ route }) => {
                         {completedRepsInSet}/{reps}
                     </Text>
                 </Text>
-                <Text style={styles.paceText}>⚡ {timeBetweenRepsInSec}s</Text>
+                <Text style={styles.paceText}>⚡ {isInBreak || isComplete ? `${timeBetweenRepsInSec}s` : `${repCountdown}s`}</Text>
             </View>
 
             {/* Cancel & Pause/Resume buttons */}
@@ -276,10 +285,9 @@ const styles = StyleSheet.create({
         zIndex: 1,
     },
     progressBarContainer: {
-        top: 20,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 60
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
     },
     notificationsIcon: {
         width: 24,
@@ -291,11 +299,12 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     bubbleContainer: {
-        position: 'relative',
+        position: 'absolute',
+        top: 10,
         width: '100%',
-        height: 100,
         justifyContent: 'center',
         alignItems: 'center',
+        zIndex: 10,
     },
     repsCount: {
         fontSize: 34,

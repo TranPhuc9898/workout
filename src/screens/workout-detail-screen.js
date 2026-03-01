@@ -12,10 +12,16 @@ import {
 const PAGE_SIZE = 20;
 
 const WorkoutDetailScreen = ({ route, navigation }) => {
-  const { muscle } = route.params;
-  const allExercises = useMemo(() => getExercisesByMuscle(muscle), [muscle]);
+  const { muscle, completedCount } = route.params;
+  const allMuscleExercises = useMemo(() => getExercisesByMuscle(muscle), [muscle]);
   const title = getMuscleDisplayName(muscle);
   const [page, setPage] = useState(1);
+
+  // If completedCount is passed, only show that many exercises (from progress card)
+  const allExercises = useMemo(() => {
+    if (completedCount > 0) return allMuscleExercises.slice(0, completedCount);
+    return allMuscleExercises;
+  }, [allMuscleExercises, completedCount]);
 
   // Paginated slice
   const displayedExercises = allExercises.slice(0, page * PAGE_SIZE);

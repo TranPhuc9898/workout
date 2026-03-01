@@ -114,8 +114,8 @@ const CircularProgressBar = ({
         : require('../../assets/trainer-lina.png');
 
     // Ring size: bigger when exerciseGif to fit GIF nicely
-    const ringSize = exerciseGif ? 340 : 280;
-    const imageSize = exerciseGif ? 260 : 270;
+    const ringSize = exerciseGif ? 340 : 340;
+    const imageSize = exerciseGif ? 260 : 230;
     const imageRadius = imageSize / 2;
 
     return (
@@ -141,18 +141,24 @@ const CircularProgressBar = ({
                 </View>
             )}
 
-            {/* Trainer image - fade in/out at milestones (overlays GIF when both present) */}
-            {shouldShowTrainer && (
+            {/* Trainer image - only shown when no exerciseGif */}
+            {shouldShowTrainer && !exerciseGif && (
                 <Animated.View
                     style={[
-                        StyleSheet.absoluteFill,
-                        { width: imageSize, height: imageSize, borderRadius: imageRadius, zIndex: 1 },
+                        {
+                            position: 'absolute',
+                            width: imageSize,
+                            height: imageSize,
+                            borderRadius: imageRadius,
+                            overflow: 'hidden',
+                            zIndex: 1,
+                        },
                         { opacity: imageOpacity },
                     ]}
                 >
                     <Image
                         source={trainerSource}
-                        style={{ width: '100%', height: '100%', borderRadius: imageRadius }}
+                        style={{ width: '100%', height: '100%' }}
                         resizeMode="cover"
                     />
                 </Animated.View>

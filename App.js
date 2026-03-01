@@ -8,6 +8,8 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import GearSettingsScreen from './src/screens/gear-settings-screen';
 import WorkoutBuddyScreen from './src/screens/workout-buddy-screen';
 import TermsOfUseScreen from './src/screens/terms-of-use-screen';
+import PrivacyPolicyScreen from './src/screens/privacy-policy-screen';
+import AboutScreen from './src/screens/about-screen';
 import BuddyInviteScreen from './src/screens/buddy-invite-screen';
 import WorkoutScreen from './src/screens/WorkoutScreen';
 import ProgressScreen from './src/screens/ProgressScreen';
@@ -65,6 +67,8 @@ export default function App() {
                     <Stack.Screen name="GearSettings" component={GearSettingsScreen} />
                     <Stack.Screen name="WorkoutBuddy" component={WorkoutBuddyScreen} />
                     <Stack.Screen name="TermsOfUse" component={TermsOfUseScreen} />
+                    <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+                    <Stack.Screen name="About" component={AboutScreen} />
                     <Stack.Screen name="BuddyInvite" component={BuddyInviteScreen} />
                     <Stack.Screen name="Workout" component={WorkoutScreen} />
                     <Stack.Screen name="Progress" component={ProgressScreen} />
