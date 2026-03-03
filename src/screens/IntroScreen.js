@@ -1,12 +1,14 @@
-import React, { useContext } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { View, Image, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AnimatedBubble from '../components/AnimatedBubble';
 import ScreenHeader from '../components/screen-header';
 import { SettingsContext } from '../SettingsContext';
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 
 const IntroScreen = ({ navigation }) => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const { selectedTrainer } = useContext(SettingsContext);
 
   const trainerImage = selectedTrainer === "1"
@@ -17,39 +19,42 @@ const IntroScreen = ({ navigation }) => {
 
   const quote = {
     text: `Hey, I am ${trainerName}, your trainer, now let's get to work!`,
-    audio: "" // no audio on intro
+    audio: ""
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScreenHeader />
       <View style={styles.container}>
-        {/* Speech bubble above avatar */}
         <View style={styles.bubbleContainer}>
           <AnimatedBubble quote={quote} delay={300} />
         </View>
 
-        {/* Avatar with border */}
         <View style={styles.avatarBorder}>
           <Image source={trainerImage} style={styles.trainerImage} />
         </View>
 
-        {/* Trainer name label */}
         <Text style={styles.trainerLabel}>{trainerName.toUpperCase()}</Text>
 
-        {/* Start button */}
         <TouchableOpacity
           style={styles.startButton}
           onPress={() => navigation.navigate('Main')}
         >
           <Text style={styles.startButtonText}>Start</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.exploreButton}
+          onPress={() => navigation.navigate('Progress')}
+        >
+          <Text style={styles.exploreButtonText}>Explore Library</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -70,9 +75,9 @@ const styles = StyleSheet.create({
     width: 240,
     height: 240,
     borderRadius: 120,
-    backgroundColor: theme.colors.white,
+    backgroundColor: theme.colors.background,
     borderWidth: 8,
-    borderColor: theme.colors.white,
+    borderColor: theme.colors.background,
     shadowColor: theme.colors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -106,6 +111,21 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontFamily: theme.fonts.bold,
     fontSize: 20,
+  },
+  exploreButton: {
+    marginTop: 200,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+  },
+  exploreButtonText: {
+    color: theme.colors.primary,
+    fontFamily: theme.fonts.bold,
+    fontSize: 16,
   },
 });
 

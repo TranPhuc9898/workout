@@ -1,30 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LottieView from 'lottie-react-native';
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 
 const STORAGE_KEY = 'hasSeenBuddyInvite';
 
 const BuddyInviteScreen = ({ navigation }) => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const [buddyName, setBuddyName] = useState('');
 
-  // Mark as seen and navigate to Main
   const dismiss = async () => {
     await AsyncStorage.setItem(STORAGE_KEY, 'true');
     navigation.replace('Main');
   };
 
   const handleSendInvite = async () => {
-    // TODO: send invite logic if needed
     await dismiss();
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={dismiss} style={styles.headerBtn}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.textPrimary} />
@@ -32,7 +31,6 @@ const BuddyInviteScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.content}>
-        {/* Trophy animation */}
         <View style={styles.iconContainer}>
           <LottieView
             source={require('../../assets/animations/trophy.json')}
@@ -55,7 +53,6 @@ const BuddyInviteScreen = ({ navigation }) => {
           <Text style={styles.bullet}>•  Stay consistent longer</Text>
         </View>
 
-        {/* Buddy name input */}
         <TextInput
           style={styles.input}
           placeholder="Who's your hype partner?"
@@ -65,7 +62,6 @@ const BuddyInviteScreen = ({ navigation }) => {
         />
       </View>
 
-      {/* Bottom buttons */}
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.laterBtn} onPress={dismiss}>
           <Text style={styles.laterBtnText}>Later</Text>
@@ -78,10 +74,10 @@ const BuddyInviteScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -131,7 +127,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   input: {
-    backgroundColor: '#F3F6FB',
+    backgroundColor: theme.colors.backgroundSecondary,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -147,7 +143,7 @@ const styles = StyleSheet.create({
   },
   laterBtn: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
     borderWidth: 1.5,
     borderColor: theme.colors.primary,
     paddingVertical: 16,
@@ -169,7 +165,7 @@ const styles = StyleSheet.create({
   sendBtnText: {
     fontFamily: theme.fonts.bold,
     fontSize: 16,
-    color: '#fff',
+    color: theme.colors.white,
   },
 });
 

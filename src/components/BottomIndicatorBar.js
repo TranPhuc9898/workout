@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 
 const BottomIndicatorBar = ({ color }) => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(), []);
   const barColor = color || theme.colors.border;
   return <View style={[styles.indicator, { backgroundColor: barColor }]} />;
 };
 
-const styles = StyleSheet.create({
+const createStyles = () => StyleSheet.create({
   indicator: {
     width: 120,
     height: 5,

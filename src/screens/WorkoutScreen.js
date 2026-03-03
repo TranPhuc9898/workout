@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext, useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,9 +13,12 @@ import BottomIndicatorBar from '../components/BottomIndicatorBar';
 import ScreenHeader from '../components/screen-header';
 import { MILESTONE_SOUNDS } from '../data/sound-registry';
 import useWorkoutAudio from '../hooks/use-workout-audio';
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 
 const WorkoutScreen = ({ route }) => {
+    const theme = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+
     const { workoutName, sets, reps, breakTime, exerciseGif, exerciseMuscle } = route.params || {};
     const { selectedTrainer, selectedTime, selectedPlaySoundsOption, selectedDelay } = useContext(SettingsContext);
 
@@ -26,7 +29,6 @@ const WorkoutScreen = ({ route }) => {
 
     const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-    // Stable quote refs — initialized once to avoid re-triggering AnimatedBubble audio on every tick
     const startQuoteRef = useRef({ text: "Give me everything you got!", audio: pickRandom(MILESTONE_SOUNDS.start) });
     const quarterQuoteRef = useRef({ text: "Great job! Keep pushing!", audio: pickRandom(MILESTONE_SOUNDS.quarter) });
     const halfQuoteRef = useRef({ text: "Halfway through, this is where the real progress happens!!", audio: pickRandom(MILESTONE_SOUNDS.half) });
@@ -45,27 +47,25 @@ const WorkoutScreen = ({ route }) => {
         { text: "Another workout in the books, amazing job!", audio: pickRandom(MILESTONE_SOUNDS.complete) },
     ];
 
-    // Workout timing constants
     const totalWorkoutTimeInSec = sets * reps * timeBetweenRepsInSec + ((sets - 1) * breakTime);
     const setDuration = reps * timeBetweenRepsInSec;
     const cycleDuration = setDuration + breakTime;
 
-    // Single source of truth: elapsed seconds (counts UP from 0)
     const [elapsed, setElapsed] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const navigation = useNavigation();
     const [randomFinalQuote, setRandomFinalQuote] = useState('');
     const [showBottomSheet, setShowBottomSheet] = useState(false);
+    const [savedTimestamp, setSavedTimestamp] = useState(null);
     const intervalRef = useRef(null);
     const isComplete = elapsed >= totalWorkoutTimeInSec;
 
-    // Derive all workout state from elapsed time
     let completedRepsInSet = 0;
     let isInBreak = false;
     let currentSet = 1;
     let breakTimeRemaining = 0;
-    let ringProgress = 0; // 0-1 phase-specific (rep or break)
-    let repCountdown = timeBetweenRepsInSec; // countdown to next rep
+    let ringProgress = 0;
+    let repCountdown = timeBetweenRepsInSec;
 
     if (isComplete) {
         completedRepsInSet = reps;
@@ -78,14 +78,11 @@ const WorkoutScreen = ({ route }) => {
         currentSet = cycleIndex + 1;
 
         if (timeInCycle < setDuration) {
-            // REP PHASE - ring fills smoothly based on time (not discrete rep steps)
             completedRepsInSet = Math.floor(timeInCycle / timeBetweenRepsInSec);
             ringProgress = timeInCycle / setDuration;
-            // Countdown: seconds remaining until next rep
             const timeInCurrentRep = timeInCycle % timeBetweenRepsInSec;
             repCountdown = timeBetweenRepsInSec - timeInCurrentRep;
         } else {
-            // BREAK PHASE - ring fills over break duration
             completedRepsInSet = reps;
             isInBreak = true;
             const breakElapsed = timeInCycle - setDuration;
@@ -95,13 +92,11 @@ const WorkoutScreen = ({ route }) => {
         }
     }
 
-    // Keep screen awake during workout
     useEffect(() => {
         activateKeepAwakeAsync();
         return () => deactivateKeepAwake();
     }, []);
 
-    // Random final quote
     useEffect(() => {
         getRandomFinalQuote();
         const interval = setInterval(getRandomFinalQuote, 1000000);
@@ -113,7 +108,6 @@ const WorkoutScreen = ({ route }) => {
         setRandomFinalQuote(quote);
     };
 
-    // Single interval driving the entire workout
     useEffect(() => {
         if (!isPaused && !isComplete) {
             intervalRef.current = setInterval(() => {
@@ -126,15 +120,16 @@ const WorkoutScreen = ({ route }) => {
         };
     }, [isPaused, isComplete]);
 
-    // Workout completion — save to history
     useEffect(() => {
         if (isComplete && totalWorkoutTimeInSec > 0) {
-            setShowBottomSheet(true);
-            saveCompletedWorkout(workoutName, exerciseMuscle);
+            const totalCalories = Math.round(sets * reps * 0.5);
+            saveCompletedWorkout(workoutName, exerciseMuscle, sets * reps, totalCalories).then(ts => {
+                setSavedTimestamp(ts);
+                setShowBottomSheet(true);
+            });
         }
     }, [isComplete]);
 
-    // Voice rep counting + motivational audio (extracted to custom hook)
     useWorkoutAudio({
         playSounds,
         reps,
@@ -182,7 +177,6 @@ const WorkoutScreen = ({ route }) => {
 
     const totalCalories = Math.round(sets * reps * 0.5);
 
-    // Trainer appears at 25%, 50%, 75% milestones (for 3 seconds each)
     const q1 = Math.floor(totalWorkoutTimeInSec * 0.25);
     const q2 = Math.floor(totalWorkoutTimeInSec * 0.5);
     const q3 = Math.floor(totalWorkoutTimeInSec * 0.75);
@@ -197,7 +191,6 @@ const WorkoutScreen = ({ route }) => {
             <ScreenHeader showBack={false} showSettings={true} showNotification={true} />
             <View style={styles.container}>
 
-            {/* Speech bubble floats above ring without taking layout space */}
             <View style={styles.bubbleContainer}>
                 {elapsed <= delayInSec &&
                     <AnimatedBubble quote={startQuoteRef.current} duration={2000} playSound={playSounds}/>}
@@ -226,7 +219,6 @@ const WorkoutScreen = ({ route }) => {
                 />
             </View>
 
-            {/* Set/Rep info + pace indicator below ring */}
             <View style={styles.repSetContainer}>
                 <Text style={styles.repSetText}>
                     Set <Text style={styles.repSetBold}>{currentSet}</Text> - Rep{' '}
@@ -237,7 +229,6 @@ const WorkoutScreen = ({ route }) => {
                 <Text style={styles.paceText}>⚡ {isInBreak || isComplete ? `${timeBetweenRepsInSec}s` : `${repCountdown}s`}</Text>
             </View>
 
-            {/* Cancel & Pause/Resume buttons */}
             {!isComplete && (
                 <View style={styles.buttonRow}>
                     <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
@@ -257,6 +248,7 @@ const WorkoutScreen = ({ route }) => {
                             onNextExercise={handleNextExercise}
                             onViewHistory={handleViewHistory}
                             workoutName={workoutName}
+                            workoutTimestamp={savedTimestamp}
                         />
                     </View>
                 </Modal>
@@ -265,7 +257,7 @@ const WorkoutScreen = ({ route }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: theme.colors.background,
@@ -276,26 +268,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    iconsContainer: {
-        position: 'absolute',
-        top: 10,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '80%',
-        zIndex: 1,
-    },
     progressBarContainer: {
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 20,
-    },
-    notificationsIcon: {
-        width: 24,
-        height: 24,
-    },
-    progressBar: {
-        width: 240,
-        height: 240,
         marginBottom: 20,
     },
     bubbleContainer: {
@@ -341,7 +316,7 @@ const styles = StyleSheet.create({
         marginBottom: 30,
     },
     cancelBtn: {
-        backgroundColor: theme.colors.white,
+        backgroundColor: theme.colors.background,
         borderWidth: 1.5,
         borderColor: theme.colors.primary,
         paddingVertical: 14,

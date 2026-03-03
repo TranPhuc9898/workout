@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Animated, StyleSheet, Easing, Text } from 'react-native';
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 
 const formatDuration = (durationInSec) => {
     const hours = Math.floor(durationInSec / 3600);
@@ -15,9 +15,10 @@ const formatDuration = (durationInSec) => {
 
 // Driven by progress prop, with smooth animation between ticks
 const HorizontalProgressBar = ({ progress = 0, durationInSec, showTimeLabels = true }) => {
+    const theme = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
     const animProgress = useRef(new Animated.Value(0)).current;
 
-    // Smoothly animate to new progress value over ~1 second
     useEffect(() => {
         Animated.timing(animProgress, {
             toValue: progress * 100,
@@ -63,7 +64,7 @@ const HorizontalProgressBar = ({ progress = 0, durationInSec, showTimeLabels = t
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',

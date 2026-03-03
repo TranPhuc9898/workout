@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 
 const SECTIONS = [
   {
@@ -36,6 +36,9 @@ const SECTIONS = [
 ];
 
 const PrivacyPolicyScreen = ({ navigation }) => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
@@ -60,8 +63,8 @@ const PrivacyPolicyScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#fff' },
+const createStyles = (theme) => StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: theme.colors.background },
   header: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 16, paddingVertical: 10,

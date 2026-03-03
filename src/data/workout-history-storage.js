@@ -3,24 +3,38 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const STORAGE_KEY = '@completed_workouts';
 
-// Save a completed workout
-export async function saveCompletedWorkout(exerciseName, muscle) {
+// Auto-save a completed workout (called when workout finishes)
+export async function saveCompletedWorkout(exerciseName, muscle, totalReps, calories) {
   try {
     const existing = await getCompletedWorkouts();
-    // Avoid duplicates (same exercise name + muscle)
-    const alreadyExists = existing.some(
-      (w) => w.exerciseName === exerciseName && w.muscle === muscle
-    );
-    if (alreadyExists) return;
-
+    const timestamp = Date.now();
     existing.push({
       exerciseName,
       muscle: muscle || 'general',
-      timestamp: Date.now(),
+      totalReps: totalReps || 0,
+      calories: calories || 0,
+      timestamp,
     });
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+    return timestamp;
   } catch (e) {
     console.warn('Failed to save workout:', e);
+    return null;
+  }
+}
+
+// Update workout custom name by timestamp (called when user presses SAVE)
+export async function updateWorkoutName(timestamp, customName) {
+  try {
+    const workouts = await getCompletedWorkouts();
+    const index = workouts.findIndex(w => w.timestamp === timestamp);
+    if (index === -1) return false;
+    workouts[index].customName = customName;
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(workouts));
+    return true;
+  } catch (e) {
+    console.warn('Failed to update workout name:', e);
+    return false;
   }
 }
 

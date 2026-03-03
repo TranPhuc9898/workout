@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 import ScreenHeader from '../components/screen-header';
 import ExpandableExerciseCard from '../components/expandable-exercise-card';
 import {
@@ -12,18 +12,18 @@ import {
 const PAGE_SIZE = 20;
 
 const WorkoutDetailScreen = ({ route, navigation }) => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   const { muscle, completedCount } = route.params;
   const allMuscleExercises = useMemo(() => getExercisesByMuscle(muscle), [muscle]);
-  const title = getMuscleDisplayName(muscle);
   const [page, setPage] = useState(1);
 
-  // If completedCount is passed, only show that many exercises (from progress card)
   const allExercises = useMemo(() => {
     if (completedCount > 0) return allMuscleExercises.slice(0, completedCount);
     return allMuscleExercises;
   }, [allMuscleExercises, completedCount]);
 
-  // Paginated slice
   const displayedExercises = allExercises.slice(0, page * PAGE_SIZE);
   const hasMore = displayedExercises.length < allExercises.length;
 
@@ -42,7 +42,6 @@ const WorkoutDetailScreen = ({ route, navigation }) => {
         layout="progress"
         onBack={() => navigation.goBack()}
       />
-      {/* Exercise list with pagination */}
       <FlatList
         data={displayedExercises}
         keyExtractor={(item, i) => `${item.name}-${i}`}
@@ -64,7 +63,7 @@ const WorkoutDetailScreen = ({ route, navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: theme.colors.background,

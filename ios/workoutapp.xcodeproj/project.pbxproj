@@ -341,9 +341,11 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = workoutapp/workoutapp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
-				DEVELOPMENT_TEAM = 3VC9NJCFLL;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 6;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 3VC9NJCFLL;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -366,6 +368,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.gymapp.dev;
 				PRODUCT_NAME = workoutapp;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = phucdev;
 				SWIFT_OBJC_BRIDGING_HEADER = "workoutapp/workoutapp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -382,9 +385,11 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = workoutapp/workoutapp.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
-				DEVELOPMENT_TEAM = 3VC9NJCFLL;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 6;
+				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = 3VC9NJCFLL;
 				INFOPLIST_FILE = workoutapp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Simonle Workout";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
@@ -402,6 +407,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.gymapp.dev;
 				PRODUCT_NAME = workoutapp;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = phucdev;
 				SWIFT_OBJC_BRIDGING_HEADER = "workoutapp/workoutapp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";

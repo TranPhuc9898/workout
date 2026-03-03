@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 import { View, Text, Image, Animated, StyleSheet, Easing } from 'react-native';
 import { Circle, Svg } from "react-native-svg";
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -12,17 +12,20 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
  * - Trainer image: quick fade out when disappearing
  */
 const CircularProgressBar = ({
-    ringProgress,       // 0-1 phase-specific progress (rep or break)
+    ringProgress,
     completedRepsInSet,
     totalReps,
     isInBreak,
-    breakTimeRemaining, // seconds left in break
+    breakTimeRemaining,
     currentSet,
     totalSets,
     showTrainerImage = false,
     trainerId = "1",
-    exerciseGif = null, // exercise GIF URL from workout detail flow
+    exerciseGif = null,
 }) => {
+    const theme = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+
     const [showFadingImage, setShowFadingImage] = useState(false);
     const imageOpacity = useRef(new Animated.Value(1)).current;
     const prevShowTrainerRef = useRef(showTrainerImage);
@@ -31,14 +34,12 @@ const CircularProgressBar = ({
     const circumference = radius * Math.PI * 2;
     const strokeWidth = 15;
 
-    // Animated value for smooth ring fill
     const animProgress = useRef(new Animated.Value(0)).current;
     const circleRef = useRef();
 
     // Ring color based on phase
     const ringColor = isInBreak ? theme.colors.breakAccent : theme.colors.primary;
 
-    // Trainer image: quick fade out when disappearing
     useEffect(() => {
         if (showTrainerImage) {
             setShowFadingImage(true);
@@ -58,7 +59,6 @@ const CircularProgressBar = ({
         prevShowTrainerRef.current = showTrainerImage;
     }, [showTrainerImage]);
 
-    // Smoothly animate to new progress value
     useEffect(() => {
         Animated.timing(animProgress, {
             toValue: ringProgress,
@@ -68,7 +68,6 @@ const CircularProgressBar = ({
         }).start();
     }, [ringProgress]);
 
-    // Update circle strokeDashoffset via native props for performance
     useEffect(() => {
         const listener = animProgress.addListener(({ value }) => {
             if (circleRef.current) {
@@ -80,12 +79,8 @@ const CircularProgressBar = ({
         return () => animProgress.removeListener(listener);
     }, []);
 
-    // Static marker dots at 12h, 3h, 6h, 9h positions
     const markerDots = [
-        { angle: -90 },  // Top
-        { angle: 0 },    // Right
-        { angle: 90 },   // Bottom
-        { angle: 180 }   // Left
+        { angle: -90 }, { angle: 0 }, { angle: 90 }, { angle: 180 }
     ].map(({ angle }) => {
         const radians = (angle * Math.PI) / 180;
         return {
@@ -94,33 +89,22 @@ const CircularProgressBar = ({
         };
     });
 
-    // Center text: rep mode = "05/13", break mode = "12s"
     const centerText = isInBreak
         ? `${breakTimeRemaining}s`
         : `${String(completedRepsInSet).padStart(2, '0')}/${totalReps}`;
 
-    // Sub label: set info or break indicator
-    const subLabel = isInBreak
-        ? `Break`
-        : `Set ${currentSet}/${totalSets}`;
-
-    // Text color matches ring color
     const textColor = isInBreak ? theme.colors.breakAccent : theme.colors.primary;
-
     const shouldShowTrainer = showTrainerImage || showFadingImage;
-
     const trainerSource = trainerId === "1"
         ? require('../../assets/trainer-alan.png')
         : require('../../assets/trainer-lina.png');
 
-    // Ring size: bigger when exerciseGif to fit GIF nicely
-    const ringSize = exerciseGif ? 340 : 340;
+    const ringSize = 340;
     const imageSize = exerciseGif ? 260 : 230;
     const imageRadius = imageSize / 2;
 
     return (
         <View style={styles.container}>
-            {/* Exercise GIF - always visible as background when available */}
             {exerciseGif && (
                 <View
                     style={{
@@ -128,7 +112,7 @@ const CircularProgressBar = ({
                         width: imageSize,
                         height: imageSize,
                         borderRadius: imageRadius,
-                        backgroundColor: '#F0EFF5',
+                        backgroundColor: theme.colors.backgroundTertiary,
                         overflow: 'hidden',
                         zIndex: 0,
                     }}
@@ -141,7 +125,6 @@ const CircularProgressBar = ({
                 </View>
             )}
 
-            {/* Trainer image - only shown when no exerciseGif */}
             {shouldShowTrainer && !exerciseGif && (
                 <Animated.View
                     style={[
@@ -165,14 +148,12 @@ const CircularProgressBar = ({
             )}
 
             <Svg height={ringSize} width={ringSize} viewBox="0 0 100 100">
-                {/* Background ring */}
                 <Circle
                     cx="50" cy="50" r={radius}
                     stroke={theme.colors.border}
                     strokeWidth={strokeWidth}
                     fill="transparent"
                 />
-                {/* Progress ring - color changes per phase */}
                 <AnimatedCircle
                     ref={circleRef}
                     cx="50" cy="50" r={radius}
@@ -184,7 +165,6 @@ const CircularProgressBar = ({
                     strokeLinecap="round"
                     transform="rotate(-90 50 50)"
                 />
-                {/* Marker dots */}
                 {markerDots.map((dot, index) => (
                     <Circle
                         key={`marker-${index}`}
@@ -194,7 +174,6 @@ const CircularProgressBar = ({
                 ))}
             </Svg>
 
-            {/* Center text - hidden when trainer or exerciseGif is showing */}
             {!showTrainerImage && !exerciseGif && (
                 <View style={[StyleSheet.absoluteFill, styles.centerContainer]}>
                     <Text style={[styles.centerText, { color: textColor }]}>
@@ -206,7 +185,7 @@ const CircularProgressBar = ({
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
     container: {
         justifyContent: 'center',
         alignItems: 'center',

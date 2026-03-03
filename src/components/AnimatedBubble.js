@@ -1,9 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { Audio } from 'expo-av';
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 
 const AnimatedBubble = ({ quote, duration = 0, delay = 100, playSound = false }) => {
+    const theme = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
+
     const bubbleScale = useRef(new Animated.Value(0)).current;
     const textOpacity = useRef(new Animated.Value(0)).current;
     const soundRef = useRef(null);
@@ -27,19 +30,16 @@ const AnimatedBubble = ({ quote, duration = 0, delay = 100, playSound = false })
     const showBubble = () => {
         const animations = [
             Animated.delay(delay),
-            // Scale up the bubble
             Animated.timing(bubbleScale, {
                 toValue: 1.3,
                 duration: 100,
                 useNativeDriver: true,
             }),
-            // Scale down the bubble
             Animated.timing(bubbleScale, {
                 toValue: 1,
                 duration: 200,
                 useNativeDriver: true,
             }),
-            // Fade in the text
             Animated.timing(textOpacity, {
                 toValue: 1,
                 duration: 200,
@@ -50,7 +50,6 @@ const AnimatedBubble = ({ quote, duration = 0, delay = 100, playSound = false })
         if (duration > 0) {
             animations.push(
                 Animated.delay(duration - 500),
-                // Scale down the bubble
                 Animated.timing(bubbleScale, {
                     toValue: 0,
                     duration: 100,
@@ -62,7 +61,6 @@ const AnimatedBubble = ({ quote, duration = 0, delay = 100, playSound = false })
         Animated.sequence(animations).start();
     };
 
-    // Show the bubble
     showBubble();
 
     return () => {
@@ -87,9 +85,9 @@ const AnimatedBubble = ({ quote, duration = 0, delay = 100, playSound = false })
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
     bubble: {
-        backgroundColor: theme.colors.backgroundTertiary, // #EEEEEE gray background
+        backgroundColor: theme.colors.backgroundTertiary,
         paddingVertical: 20,
         paddingHorizontal: 24,
         maxWidth: '85%',
@@ -114,7 +112,7 @@ const styles = StyleSheet.create({
         borderTopWidth: 20,
         borderLeftColor: 'transparent',
         borderRightColor: 'transparent',
-        borderTopColor: theme.colors.backgroundTertiary, // #EEEEEE to match bubble
+        borderTopColor: theme.colors.backgroundTertiary,
         position: 'absolute',
         bottom: -19,
         left: 28,

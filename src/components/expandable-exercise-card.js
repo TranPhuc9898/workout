@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 
 // Tappable exercise card - expands to show GIF + instructions + start button
 const ExpandableExerciseCard = ({ item, index }) => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation();
   const [expanded, setExpanded] = useState(false);
 
@@ -31,12 +33,10 @@ const ExpandableExerciseCard = ({ item, index }) => {
       {/* Expanded: GIF + muscles + instructions */}
       {expanded && (
         <View style={styles.detailSection}>
-          {/* Exercise GIF */}
           {item.gifUrl && (
             <Image source={{ uri: item.gifUrl }} style={styles.gif} resizeMode="contain" />
           )}
 
-          {/* Muscle tags */}
           <View style={styles.tagRow}>
             {(item.targetMuscles || []).map((m) => (
               <View key={m} style={styles.muscleTag}>
@@ -50,7 +50,6 @@ const ExpandableExerciseCard = ({ item, index }) => {
             ))}
           </View>
 
-          {/* Step-by-step instructions */}
           <Text style={styles.instructionsTitle}>How to perform:</Text>
           {(item.instructions || []).map((step, i) => (
             <View key={i} style={styles.stepRow}>
@@ -61,7 +60,6 @@ const ExpandableExerciseCard = ({ item, index }) => {
             </View>
           ))}
 
-          {/* Start exercise button */}
           <TouchableOpacity
             style={styles.startBtn}
             onPress={() => navigation.navigate('Main', {
@@ -79,7 +77,7 @@ const ExpandableExerciseCard = ({ item, index }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   card: {
     backgroundColor: theme.colors.backgroundSecondary,
     borderRadius: 12,

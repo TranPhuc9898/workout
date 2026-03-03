@@ -1,19 +1,24 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import React, { useContext, useMemo } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import theme from '../theme';
+import { SettingsContext } from '../SettingsContext';
+import { useTheme } from '../hooks/use-theme';
 
 const MENU_ITEMS = [
   { key: 'buddy', icon: 'people-outline', label: 'Workout Buddy', screen: 'WorkoutBuddy' },
   { key: 'notifications', icon: 'notifications-outline', label: 'Notifications', screen: null },
-  { key: 'sound', icon: 'volume-medium-outline', label: 'Sound & Voice', screen: null },
+  { key: 'sound', icon: 'volume-medium-outline', label: 'Sound & Voice', screen: 'Settings' },
   { key: 'terms', icon: 'document-text-outline', label: 'Terms of Use', screen: 'TermsOfUse' },
   { key: 'privacy', icon: 'shield-checkmark-outline', label: 'Privacy Policy', screen: 'PrivacyPolicy' },
   { key: 'about', icon: 'information-circle-outline', label: 'About', screen: 'About' },
 ];
 
 const GearSettingsScreen = ({ navigation }) => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+  const { isDarkMode, setIsDarkMode } = useContext(SettingsContext);
+
   const handlePress = (item) => {
     if (item.screen) {
       navigation.navigate(item.screen);
@@ -22,7 +27,6 @@ const GearSettingsScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header: ← back only */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtn}>
           <Ionicons name="arrow-back" size={24} color={theme.colors.textPrimary} />
@@ -32,6 +36,22 @@ const GearSettingsScreen = ({ navigation }) => {
       </View>
 
       <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
+        {/* Dark Mode Toggle */}
+        <View style={styles.toggleRow}>
+          <View style={styles.menuLeft}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="moon-outline" size={20} color={theme.colors.primary} />
+            </View>
+            <Text style={styles.menuLabel}>Dark Mode</Text>
+          </View>
+          <Switch
+            value={isDarkMode}
+            onValueChange={(val) => setIsDarkMode(val)}
+            trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+            thumbColor={theme.colors.white}
+          />
+        </View>
+
         {MENU_ITEMS.map((item, index) => (
           <TouchableOpacity
             key={item.key}
@@ -49,17 +69,16 @@ const GearSettingsScreen = ({ navigation }) => {
           </TouchableOpacity>
         ))}
 
-        {/* App version */}
         <Text style={styles.versionText}>Version 1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
   },
   header: {
     flexDirection: 'row',
@@ -87,13 +106,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
   },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderLight,
+  },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F5',
+    borderBottomColor: theme.colors.borderLight,
   },
   menuItemLast: {
     borderBottomWidth: 0,
@@ -107,7 +134,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F3F0FF',
+    backgroundColor: theme.colors.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
   },

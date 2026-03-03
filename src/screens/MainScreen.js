@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { StatusBar, StyleSheet, Text, View, Image, TouchableOpacity, Animated, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Animated, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Picker } from '@react-native-picker/picker';
 import AnimatedBubble from '../components/AnimatedBubble';
 import ScreenHeader from '../components/screen-header';
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 
 
 const arrayRange = (start, stop, step) =>
@@ -16,11 +16,12 @@ const arrayRange = (start, stop, step) =>
 
 
 const MainScreen = () => {
+    const theme = useTheme();
+    const styles = useMemo(() => createStyles(theme), [theme]);
 
     const logoScale = useRef(new Animated.Value(1)).current;
     const route = useRoute();
 
-    // Exercise data passed from workout detail screen
     const exerciseName = route.params?.exerciseName || null;
     const exerciseGif = route.params?.exerciseGif || null;
     const exerciseMuscle = route.params?.exerciseMuscle || null;
@@ -29,41 +30,35 @@ const MainScreen = () => {
     const [inputText, setInputText] = useState(exerciseName || 'My Workout');
     const navigation = useNavigation();
 
-    const minSetsOption = 1;
-    const minRepsOption = 5;
-    const minBreakOption = 10;
-
     const defaultSetsOption = 3;
     const defaultRepsOption = 15;
     const defaultBreakOption = 15;
 
-    // Function to trigger the animation
     const startAnimation = () => {
         Animated.sequence([
             Animated.timing(logoScale, {
-            toValue: 1.3, // Scale up to 1.5 times the original size
-            duration: 200, // Animation duration in milliseconds
-            useNativeDriver: true, // Enable native driver
+            toValue: 1.3,
+            duration: 200,
+            useNativeDriver: true,
             }),
         Animated.timing(logoScale, {
-            toValue: 1, // Scale back to the original size
+            toValue: 1,
             duration: 400,
             useNativeDriver: true,
             }),
-        ]).start(() => startContinuousAnimation()); // Start continuous animation after initial animation ends
+        ]).start(() => startContinuousAnimation());
     };
 
-    // Function to start the continuous animation
     const startContinuousAnimation = () => {
         Animated.loop(
             Animated.sequence([
                 Animated.timing(logoScale, {
-                    toValue: 1.05, // Scale up to 1.2 times the original size
-                    duration: 1200, // Animation duration in milliseconds
+                    toValue: 1.05,
+                    duration: 1200,
                     useNativeDriver: true,
                 }),
                 Animated.timing(logoScale, {
-                    toValue: 1, // Scale back to the original size
+                    toValue: 1,
                     duration: 1200,
                     useNativeDriver: true,
                 }),
@@ -71,7 +66,6 @@ const MainScreen = () => {
         ).start();
     };
 
-    // Only animate the logo (breathing effect) when no exercise GIF is shown
     useEffect(() => {
         if (!exerciseGif) {
             startAnimation();
@@ -129,10 +123,7 @@ const MainScreen = () => {
 
                     <Text style={styles.defaultSetupText}>Default setup for workout</Text>
 
-                    <StatusBar style="auto" />
-
                     <View style={styles.row}>
-                        {/* Set Picker */}
                         <View style={styles.columnContainer}>
                             <Text style={styles.column}>Set</Text>
                             <View style={styles.pickerWrapper}>
@@ -149,7 +140,6 @@ const MainScreen = () => {
                             </View>
                         </View>
 
-                        {/* Rep Picker */}
                         <View style={styles.columnContainer}>
                             <Text style={styles.column}>Rep</Text>
                             <View style={styles.pickerWrapper}>
@@ -166,7 +156,6 @@ const MainScreen = () => {
                             </View>
                         </View>
 
-                        {/* Break Picker */}
                         <View style={styles.columnContainer}>
                             <Text style={styles.column}>Break(s)</Text>
                             <View style={styles.pickerWrapper}>
@@ -184,14 +173,19 @@ const MainScreen = () => {
                         </View>
                     </View>
 
-                    <StatusBar style="auto" />
+                    <TouchableOpacity
+                        style={styles.exploreButton}
+                        onPress={() => navigation.navigate('Progress')}
+                    >
+                        <Text style={styles.exploreButtonText}>Explore Library</Text>
+                    </TouchableOpacity>
                 </View>
             </KeyboardAvoidingView>
         </SafeAreaView>
       );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: theme.colors.background,
@@ -223,7 +217,7 @@ const styles = StyleSheet.create({
         borderRadius: 140,
         borderWidth: 5,
         borderColor: theme.colors.primary,
-        backgroundColor: '#F0EFF5',
+        backgroundColor: theme.colors.backgroundTertiary,
         overflow: 'hidden',
         justifyContent: 'center',
         alignItems: 'center',
@@ -273,6 +267,22 @@ const styles = StyleSheet.create({
         fontSize: 22,
         color: theme.colors.primary,
         height: 120,
+    },
+    exploreButton: {
+        marginTop: 4,
+        marginBottom: 8,
+        paddingVertical: 14,
+        paddingHorizontal: 32,
+        borderRadius: 16,
+        borderWidth: 2,
+        borderColor: theme.colors.primary,
+        backgroundColor: 'transparent',
+        alignItems: 'center',
+    },
+    exploreButtonText: {
+        color: theme.colors.primary,
+        fontFamily: theme.fonts.bold,
+        fontSize: 16,
     },
 });
 

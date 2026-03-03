@@ -124,13 +124,8 @@ class WorkoutAudioManager {
     if (totalReps <= 0) return false;
     // Not enough time between reps for a full motivational phrase
     if (timeBetweenRepsInSec < 5) return false;
-    const progress = currentRep / totalReps;
-    let chance;
-    if (progress <= 0.25) chance = 0.1;
-    else if (progress <= 0.5) chance = 0.2;
-    else if (progress <= 0.75) chance = 0.35;
-    else chance = 0.5;
-    return Math.random() < chance;
+    // Play motivational every 4 reps (and on last rep)
+    return currentRep % 4 === 0 || currentRep === totalReps;
   }
 
   // Stop whatever is currently playing

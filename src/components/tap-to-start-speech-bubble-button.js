@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 
 /**
  * TapToStartSpeechBubbleButton - A button styled as a speech bubble
- * with gray background (#EEEEEE) and triangle pointer on the left side pointing down
- * Design matches Figma mockup #18
+ * with gray background and triangle pointer on the left side pointing down
  */
 const TapToStartSpeechBubbleButton = ({ onPress }) => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
       <View style={styles.container}>
@@ -20,13 +22,13 @@ const TapToStartSpeechBubbleButton = ({ onPress }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   bubble: {
-    backgroundColor: theme.colors.backgroundTertiary, // #EEEEEE from Figma
+    backgroundColor: theme.colors.backgroundTertiary,
     paddingVertical: 14,
     paddingHorizontal: 28,
     borderRadius: 12,
@@ -44,13 +46,13 @@ const styles = StyleSheet.create({
     borderTopWidth: 14,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: theme.colors.backgroundTertiary, // #EEEEEE
+    borderTopColor: theme.colors.backgroundTertiary,
     position: 'absolute',
     bottom: -13,
-    left: 20, // Triangle positioned on LEFT side, pointing DOWN
+    left: 20,
   },
   text: {
-    color: theme.colors.primary, // Purple text
+    color: theme.colors.primary,
     fontSize: 18,
     fontFamily: theme.fonts.semiBold,
     textTransform: 'lowercase',

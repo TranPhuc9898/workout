@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
+import { StatusBar } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { SettingsProvider } from './src/SettingsContext';
+import { SettingsProvider, SettingsContext } from './src/SettingsContext';
+import { getTheme } from './src/theme';
 import IntroScreen from './src/screens/IntroScreen';
 import MainScreen from './src/screens/MainScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
@@ -14,13 +16,56 @@ import BuddyInviteScreen from './src/screens/buddy-invite-screen';
 import WorkoutScreen from './src/screens/WorkoutScreen';
 import ProgressScreen from './src/screens/ProgressScreen';
 import WorkoutDetailScreen from './src/screens/workout-detail-screen';
+import SavedWorkoutDetailScreen from './src/screens/saved-workout-detail-screen';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 
 const Stack = createStackNavigator();
 
-// Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
+
+// Inner component that has access to SettingsContext
+const AppNavigator = () => {
+    const { isDarkMode, settingsLoaded } = useContext(SettingsContext);
+
+    if (!settingsLoaded) return null;
+    const theme = getTheme(isDarkMode);
+
+    const navTheme = {
+        dark: isDarkMode,
+        colors: {
+            primary: theme.colors.primary,
+            background: theme.colors.background,
+            card: theme.colors.backgroundSecondary,
+            text: theme.colors.textPrimary,
+            border: theme.colors.border,
+            notification: theme.colors.primary,
+        },
+    };
+
+    return (
+        <>
+            <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+            <NavigationContainer theme={navTheme}>
+                <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Intro">
+                    <Stack.Screen name="Intro" component={IntroScreen} />
+                    <Stack.Screen name="Main" component={MainScreen} />
+                    <Stack.Screen name="Settings" component={SettingsScreen} />
+                    <Stack.Screen name="GearSettings" component={GearSettingsScreen} />
+                    <Stack.Screen name="WorkoutBuddy" component={WorkoutBuddyScreen} />
+                    <Stack.Screen name="TermsOfUse" component={TermsOfUseScreen} />
+                    <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+                    <Stack.Screen name="About" component={AboutScreen} />
+                    <Stack.Screen name="BuddyInvite" component={BuddyInviteScreen} />
+                    <Stack.Screen name="Workout" component={WorkoutScreen} />
+                    <Stack.Screen name="Progress" component={ProgressScreen} />
+                    <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />
+                    <Stack.Screen name="SavedWorkoutDetail" component={SavedWorkoutDetailScreen} />
+                </Stack.Navigator>
+            </NavigationContainer>
+        </>
+    );
+};
 
 export default function App() {
     const [appIsReady, setAppIsReady] = useState(false);
@@ -33,13 +78,10 @@ export default function App() {
     useEffect(() => {
         async function prepare() {
         try {
-            // Keep the splash screen visible while we fetch resources
             await SplashScreen.preventAutoHideAsync();
-            // Pre-load fonts, make any API calls you need to do here
         } catch (e) {
             console.warn(e);
         } finally {
-            // Tell the application to render
             setAppIsReady(true);
         }
     }
@@ -59,22 +101,7 @@ export default function App() {
 
     return (
         <SettingsProvider>
-            <NavigationContainer>
-                <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Intro">
-                    <Stack.Screen name="Intro" component={IntroScreen} />
-                    <Stack.Screen name="Main" component={MainScreen} />
-                    <Stack.Screen name="Settings" component={SettingsScreen} />
-                    <Stack.Screen name="GearSettings" component={GearSettingsScreen} />
-                    <Stack.Screen name="WorkoutBuddy" component={WorkoutBuddyScreen} />
-                    <Stack.Screen name="TermsOfUse" component={TermsOfUseScreen} />
-                    <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
-                    <Stack.Screen name="About" component={AboutScreen} />
-                    <Stack.Screen name="BuddyInvite" component={BuddyInviteScreen} />
-                    <Stack.Screen name="Workout" component={WorkoutScreen} />
-                    <Stack.Screen name="Progress" component={ProgressScreen} />
-                    <Stack.Screen name="WorkoutDetail" component={WorkoutDetailScreen} />
-                </Stack.Navigator>
-            </NavigationContainer>
+            <AppNavigator />
         </SettingsProvider>
     );
 }

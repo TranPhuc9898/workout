@@ -1,12 +1,15 @@
 // Main theme configuration - centralized design tokens
-import colors from './colors';
+import { lightColors, darkColors } from './colors';
 import fonts from './fonts';
 import spacing from './spacing';
 
-export const theme = {
-  colors,
+export const getTheme = (isDark = false) => ({
+  colors: isDark ? darkColors : lightColors,
   fonts,
   spacing,
-};
+  isDark,
+});
 
+// Backward compat
+export const theme = getTheme(false);
 export default theme;

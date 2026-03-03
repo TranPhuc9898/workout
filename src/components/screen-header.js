@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import theme from '../theme';
+import { useTheme } from '../hooks/use-theme';
 
 /**
  * Shared header component for consistent top bar across all screens.
@@ -18,6 +18,8 @@ const ScreenHeader = ({
   onBack,
   layout = 'default',
 }) => {
+  const theme = useTheme();
+  const styles = useMemo(() => createStyles(theme), [theme]);
   const navigation = useNavigation();
   const handleBack = onBack || (() => navigation.goBack());
   const isProgressLayout = layout === 'progress';
@@ -77,7 +79,7 @@ const ScreenHeader = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme) => StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
